@@ -14,10 +14,9 @@ import javax.naming.directory.*;
 @Service
 public class GroupService {
 
-    public String findUserInOu(String cn, String ou) throws NamingException, JSONException {
+   /* public String findUserInOu(String cn, String ou) throws NamingException, JSONException {
         DirContext context = new InitialDirContext(Utilities.getEnv(Utilities.URL));
         JSONArray jArray = new JSONArray();
-
         if (jArray != null) {
             String filter = "(&(objectclass=person)(cn="+ cn + "))";
             SearchControls searchControls = new SearchControls();
@@ -42,7 +41,7 @@ public class GroupService {
             answer.close();
         }
         return jArray.toString();
-    }
+    }*/
 
     public String getUsersInGroup(String groupId) throws NamingException, JSONException {
         String groupDN = "cn=" + groupId + "," + "ou=groups," + Utilities.BASE_DN;
