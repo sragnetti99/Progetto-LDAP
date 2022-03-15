@@ -27,12 +27,12 @@ public class PeopleController implements PeopleApi {
         this.peopleService = peopleService;
     }
 
-    @GetMapping(path = "", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String getAllUsers() throws NamingException, JSONException {
-        return peopleService.getAllUsers();
+    @GetMapping(path = {"/", "/{cn}"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    public String getAllUsers(@PathVariable(required = false) String cn) throws NamingException, JSONException {
+        return peopleService.getAllUsers(cn);
     }
 
-    @GetMapping(path = "", produces = MediaType.APPLICATION_JSON_VALUE)
+   /* @GetMapping(path = "/", produces = MediaType.APPLICATION_JSON_VALUE)
     public String findUser(@RequestParam String cn) throws JSONException, NamingException {
         String user = peopleService.findUser(cn);
         if(Utilities.isUserEmpty(user)){
@@ -40,9 +40,9 @@ public class PeopleController implements PeopleApi {
         } else {
             return user;
         }
-    }
+    }*/
 
-    @GetMapping(path = "", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = "/", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseMessage postUser(@RequestBody User user) {
         if(this.peopleService.save(user)){
             return new ResponseMessage(true, ResponseCode.OK, "Utente inserito correttamente");
@@ -51,7 +51,7 @@ public class PeopleController implements PeopleApi {
         }
     }
 
-    @DeleteMapping(path = "", produces = MediaType.APPLICATION_JSON_VALUE)
+    @DeleteMapping(path = "/", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseMessage deleteUser(@RequestBody String cn) throws JSONException, NamingException {
         String commonName = new JSONObject(cn).getString("cn");
         if (!Utilities.isUserEmpty(this.peopleService.findUser(commonName))) {
@@ -62,7 +62,7 @@ public class PeopleController implements PeopleApi {
         }
     }
 
-    @PutMapping(path = "",  consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(path = "/",  consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseMessage putUser(@RequestBody User user) {
         try {
             this.peopleService.putUser(user);

@@ -4,6 +4,7 @@ import it.eg.cookbook.error.BusinessException;
 import it.eg.cookbook.model.ResponseCode;
 import it.eg.cookbook.model.ResponseMessage;
 import it.eg.cookbook.service.GroupService;
+import it.eg.cookbook.service.PeopleService;
 import it.eg.cookbook.utility.Utilities;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONException;
@@ -19,54 +20,25 @@ import javax.naming.NamingException;
 public class GroupController implements GroupApi {
 
     private GroupService groupService;
+    private PeopleService peopleService;
 
     @Autowired
     public GroupController(GroupService groupService) {
         this.groupService = groupService;
+        this.peopleService = new PeopleService();
     }
 
-    @GetMapping(path = "", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "/", produces = MediaType.APPLICATION_JSON_VALUE)
     public String getAllGroups() throws NamingException, JSONException {
         return groupService.getAllGroups().toString();
     }
 
     @GetMapping(path = "/{groupId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String getAllUsersInOu(@PathVariable String groupId) {
-        String user = null;
+    public String getUsersInGroup(@PathVariable String groupId) {
         try {
-            user = groupService.getAllUsersInOu(groupId);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        } catch (NamingException ne) {
-            throw new BusinessException(ResponseCode.GROUP_NOT_FOUND);
-        }
-        if(user != null && Utilities.isUserEmpty(user)){
-            throw new BusinessException(ResponseCode.GROUP_USERS_NOT_FOUND);
-        } else {
-            return user;
-        }
-    }
-
-    @GetMapping(path = "", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String getUsersInGroup(@RequestParam String ou, @RequestParam String cn) {
-        try {
-            return groupService.getUsersInGroup(ou, cn);
+            return groupService.getUsersInGroup(groupId);
         } catch (NamingException | JSONException e) {
             throw new BusinessException(ResponseCode.GROUP_NOT_FOUND);
-        }
-    }
-
-    @GetMapping(path = "", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String findUserInOu(@RequestParam String cn, @RequestParam String ou) {
-        try {
-            String user = groupService.findUserInOu(cn, ou);
-            if(!Utilities.isUserEmpty(user)){
-                return user;
-            } else {
-                throw new BusinessException(ResponseCode.USER_NOT_FOUND);
-            }
-        } catch (NamingException | JSONException e) {
-            throw new BusinessException(ResponseCode.USER_NOT_FOUND);
         }
     }
 
@@ -83,8 +55,12 @@ public class GroupController implements GroupApi {
     @PostMapping(path = "/{groupId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseMessage postUser(@RequestBody String uniqueMember, @PathVariable String groupId) {
         try {
-            this.groupService.addUserToGroup(uniqueMember, groupId);
-            return new ResponseMessage(true, ResponseCode.OK, "Utente inserito correttamente nel gruppo");
+            if(!Utilities.isUserEmpty(this.peopleService.findUser(uniqueMember.substring(uniqueMember.indexOf("=")+1, uniqueMember.indexOf(","))))){
+                this.groupService.addUserToGroup(uniqueMember, groupId);
+                return new ResponseMessage(true, ResponseCode.OK, "Utente inserito correttamente nel gruppo");
+            } else {
+                throw new BusinessException(ResponseCode.USER_NOT_FOUND);
+            }
         } catch (NamingException | JSONException e) {
             throw new BusinessException(ResponseCode.ALREADY_ADDED);
         }

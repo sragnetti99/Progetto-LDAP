@@ -14,15 +14,15 @@ import javax.naming.directory.*;
 @Service
 public class PeopleService {
 
-    public String getAllUsers() throws NamingException, JSONException {
-        DirContext adminContext = new InitialDirContext(Utilities.getEnv(Utilities.BASE_URL));
+    public String getAllUsers(String cn) throws NamingException, JSONException {
+        DirContext adminContext = new InitialDirContext(Utilities.getEnv(Utilities.URL));
 
         JSONArray jArray = new JSONArray();
         if (jArray != null) {
-            String filter = "objectclass=person";
+            String filter = cn != null ? "objectclass=uniqueMember" : "objectclass=person";
             SearchControls searchControls = new SearchControls();
             searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-            NamingEnumeration<SearchResult> answer = adminContext.search("", filter, searchControls);
+            NamingEnumeration<SearchResult> answer = adminContext.search(cn != null ? "cn=" + cn + "," + Utilities.GROUP_CONTEXT : Utilities.BASE_DN, filter, searchControls);
             Utilities.jsonUserBuilder(answer, jArray);
             answer.close();
         }

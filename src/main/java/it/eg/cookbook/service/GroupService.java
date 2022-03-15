@@ -44,8 +44,8 @@ public class GroupService {
         return jArray.toString();
     }
 
-    public String getUsersInGroup(String ou, String cn) throws NamingException, JSONException {
-        String groupDN = "cn=" + cn + "," + "ou=" + ou + "," + Utilities.BASE_DN;
+    public String getUsersInGroup(String groupId) throws NamingException, JSONException {
+        String groupDN = "cn=" + groupId + "," + "ou=groups," + Utilities.BASE_DN;
         DirContext context = new InitialDirContext(Utilities.getEnv(Utilities.URL));
 
         JSONArray jArray = new JSONArray();
@@ -90,12 +90,11 @@ public class GroupService {
         Attributes attributes = new BasicAttributes();
         attributes.put(member);
         context.modifyAttributes("cn=" + groupId + "," + Utilities.GROUP_CONTEXT, DirContext.ADD_ATTRIBUTE, attributes);
-
     }
 
     public void deleteUserFromGroup(String uniqueMember, String groupId) throws NamingException, JSONException {
         DirContext context = new InitialDirContext(Utilities.getEnv(Utilities.URL));
-        BasicAttribute member = new BasicAttribute("uniqueMember", new JSONObject(uniqueMember).get("uniquemember"));
+        BasicAttribute member = new BasicAttribute("uniqueMember", new JSONObject(uniqueMember).get("uniqueMember"));
         Attributes attributes = new BasicAttributes();
         attributes.put(member);
         context.modifyAttributes("cn=" + groupId + "," + Utilities.GROUP_CONTEXT, DirContext.REMOVE_ATTRIBUTE, attributes);
@@ -106,7 +105,7 @@ public class GroupService {
         JSONArray jArray = new JSONArray();
 
         if (jArray != null) {
-            String member = new JSONObject(uniqueMember).get("uniquemember").toString();
+            String member = new JSONObject(uniqueMember).get("uniqueMember").toString();
             String filter = "uniqueMember=" + member;
             SearchControls searchControls = new SearchControls();
             searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);

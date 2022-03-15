@@ -8,6 +8,7 @@ import it.eg.cookbook.model.ResponseMessage;
 import it.eg.cookbook.model.User;
 import org.json.JSONException;
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -20,13 +21,13 @@ public interface PeopleApi {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok", response = String.class)
     })
-    String getAllUsers()  throws NamingException, JSONException;
+    String getAllUsers(@PathVariable(required = false) String cn)  throws NamingException, JSONException;
 
-    @ApiOperation(value = "Ritorna l'utente cercato")
+  /*  @ApiOperation(value = "Ritorna l'utente cercato")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok", response = String.class)
     })
-    String findUser(@RequestParam String cn) throws JSONException, NamingException;
+    String findUser(@RequestParam String cn) throws JSONException, NamingException;*/
 
 
     @ApiOperation(value = "Aggiunge un nuovo utente")

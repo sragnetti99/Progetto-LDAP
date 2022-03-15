@@ -24,26 +24,12 @@ public interface GroupApi {
     })
     String getAllGroups() throws NamingException, JSONException;
 
-    @ApiOperation(value = "Ritorna la lista di utenti presenti in un Organizational Unit")
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok", response = String.class),
-            @ApiResponse(code = 400, message = "Errore nel reperimento degli utenti", response = String.class)
-    })
-    String getAllUsersInOu(@PathVariable String groupId);
-
     @ApiOperation(value = "Ritorna la lista di tutti gli uniqueMember di un gruppo")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok", response = String.class),
             @ApiResponse(code = 400, message = "Errore nel reperimento degli uniqueMember", response = String.class)
     })
-    String getUsersInGroup(@RequestParam String cn, @RequestParam String ou);
-
-    @ApiOperation(value = "Ritorna l'utente cercato se è presente nel gruppo indicato")
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok", response = String.class),
-            @ApiResponse(code = 400, message = "Errore nel reperimento dell'utente", response = String.class)
-    })
-    String findUserInOu(@RequestParam String cn, @RequestParam String ou);
+    String getUsersInGroup(@PathVariable String groupId);
 
     @ApiOperation(value = "Elimina un utente da un gruppo")
     @ApiResponses(value = {
