@@ -15,33 +15,18 @@ import javax.naming.directory.*;
 public class PeopleService {
 
     public String getAllUsers(String cn) throws NamingException, JSONException {
-        DirContext adminContext = new InitialDirContext(Utilities.getEnv(Utilities.URL));
+        DirContext adminContext = new InitialDirContext(Utilities.getEnv(Utilities.BASE_URL));
 
         JSONArray jArray = new JSONArray();
         if (jArray != null) {
-            String filter = cn != null ? "objectclass=uniqueMember" : "objectclass=person";
+            String filter = cn != null ? "(&(objectclass=person)(cn="+ cn + "))" : "objectclass=person";
             SearchControls searchControls = new SearchControls();
             searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-            NamingEnumeration<SearchResult> answer = adminContext.search(cn != null ? "cn=" + cn + "," + Utilities.GROUP_CONTEXT : Utilities.BASE_DN, filter, searchControls);
+            NamingEnumeration<SearchResult> answer = adminContext.search("", filter, searchControls);
             Utilities.jsonUserBuilder(answer, jArray);
             answer.close();
         }
         adminContext.close();
-        return jArray.toString();
-    }
-
-    public String findUser(String cn) throws NamingException, JSONException {
-        DirContext context = new InitialDirContext(Utilities.getEnv(Utilities.BASE_URL));
-        JSONArray jArray = new JSONArray();
-
-        if (jArray != null) {
-            String filter = "(&(objectclass=person)(cn="+ cn + "))";
-            SearchControls ctrl = new SearchControls();
-            ctrl.setSearchScope(SearchControls.SUBTREE_SCOPE);
-            NamingEnumeration<SearchResult> answer = context.search("", filter, ctrl);
-            Utilities.jsonUserBuilder(answer, jArray);
-            answer.close();
-        }
         return jArray.toString();
     }
 
@@ -60,7 +45,7 @@ public class PeopleService {
             Attribute sn = new BasicAttribute("sn", user.getSn());
             Attribute mail = new BasicAttribute("mail", user.getEmail());
             Attribute password = new BasicAttribute("userPassword", user.getPassword());
-            Attribute username = new BasicAttribute("uid", user.getUsername());
+            Attribute username = new BasicAttribute("uid", user.getUid());
 
             Attributes container = new BasicAttributes();
             container.put(objClasses);
@@ -93,7 +78,22 @@ public class PeopleService {
         mods[2] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("mail", user.getEmail()));
         mods[3] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("userPassword", user.getPassword()));
         mods[4] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("uid", user.getUid()));
-
         context.modifyAttributes("cn=" + user.getCn() + "," + Utilities.USER_CONTEXT, mods);
     }
+
+    public String findUser(String cn) throws NamingException, JSONException {
+        DirContext context = new InitialDirContext(Utilities.getEnv(Utilities.BASE_URL));
+        JSONArray jArray = new JSONArray();
+
+        if (jArray != null) {
+            String filter = "(&(objectclass=person)(cn="+ cn + "))";
+            SearchControls ctrl = new SearchControls();
+            ctrl.setSearchScope(SearchControls.SUBTREE_SCOPE);
+            NamingEnumeration<SearchResult> answer = context.search("", filter, ctrl);
+            Utilities.jsonUserBuilder(answer, jArray);
+            answer.close();
+        }
+        return jArray.toString();
+    }
+
 }

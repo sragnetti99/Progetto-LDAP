@@ -4,11 +4,15 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 @ApiModel
 public class User {
+
+   // public void User(){}
 
     @ApiModelProperty(notes = "Common Name", position = 1, required = true, example = "sragnetti")
     private String cn;
@@ -25,9 +29,6 @@ public class User {
     @ApiModelProperty(notes = "user password", position = 5,example = "password")
     private String password;
 
-    @ApiModelProperty(notes = "username", position = 6, example = "sragnetti")
-    private String username;
-
-    @ApiModelProperty(notes = "uid", position = 7, example = "sragnetti")
+    @ApiModelProperty(notes = "uid", position = 6, example = "sragnetti")
     private String uid;
 }
