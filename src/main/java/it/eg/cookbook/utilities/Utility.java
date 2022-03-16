@@ -1,4 +1,4 @@
-package it.eg.cookbook.utility;
+package it.eg.cookbook.utilities;
 
 
 import org.json.JSONArray;
@@ -12,7 +12,7 @@ import javax.naming.directory.Attributes;
 import javax.naming.directory.SearchResult;
 import java.util.Hashtable;
 
-public class Utilities {
+public class Utility {
 
     public static final String BASE_DN = "dc=imolinfo,dc=it";
     public static final String URL = "ldap://localhost:389/";

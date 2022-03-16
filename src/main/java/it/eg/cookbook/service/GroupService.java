@@ -1,7 +1,7 @@
 package it.eg.cookbook.service;
 
 
-import it.eg.cookbook.utility.Utilities;
+import it.eg.cookbook.utilities.Utility;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -14,38 +14,9 @@ import javax.naming.directory.*;
 @Service
 public class GroupService {
 
-   /* public String findUserInOu(String cn, String ou) throws NamingException, JSONException {
-        DirContext context = new InitialDirContext(Utilities.getEnv(Utilities.URL));
-        JSONArray jArray = new JSONArray();
-        if (jArray != null) {
-            String filter = "(&(objectclass=person)(cn="+ cn + "))";
-            SearchControls searchControls = new SearchControls();
-            searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-            NamingEnumeration<SearchResult> answer = context.search("ou=" + ou + "," + Utilities.BASE_DN, filter, searchControls);
-            Utilities.jsonUserBuilder(answer, jArray);
-            answer.close();
-        }
-        return jArray.toString();
-    }
-
-    public String getAllUsersInOu(String ou) throws NamingException, JSONException {
-        DirContext context = new InitialDirContext(Utilities.getEnv(Utilities.URL));
-        JSONArray jArray = new JSONArray();
-
-        if (jArray != null) {
-            String filter = "objectclass=person";
-            SearchControls ctrl = new SearchControls();
-            ctrl.setSearchScope(SearchControls.SUBTREE_SCOPE);
-            NamingEnumeration<SearchResult> answer = context.search("ou=" + ou + "," + Utilities.BASE_DN, filter, ctrl);
-            Utilities.jsonUserBuilder(answer, jArray);
-            answer.close();
-        }
-        return jArray.toString();
-    }*/
-
     public String getUsersInGroup(String groupId) throws NamingException, JSONException {
-        String groupDN = "cn=" + groupId + "," + "ou=groups," + Utilities.BASE_DN;
-        DirContext context = new InitialDirContext(Utilities.getEnv(Utilities.URL));
+        String groupDN = "cn=" + groupId + "," + "ou=groups," + Utility.BASE_DN;
+        DirContext context = new InitialDirContext(Utility.getEnv(Utility.URL));
 
         JSONArray jArray = new JSONArray();
         String filter = "uniqueMember=*";
@@ -60,8 +31,9 @@ public class GroupService {
 
         for (int i = 0; i < a.get("uniqueMember").size(); i++) {
             JSONObject cnJson = new JSONObject();
-            cnJson.put("uniqueMember", a.get("uniqueMember").get(i));
-            cnJson.put("dn", dn);
+            String member = a.get("uniqueMember").get(i).toString();
+            cnJson.put("user", member.substring(member.indexOf("=")+1, member.indexOf(",")));
+            cnJson.put("location", dn.substring(dn.indexOf("=")+1, dn.indexOf(",")));
             jArray.put(cnJson);
         }
         answer.close();
@@ -69,38 +41,44 @@ public class GroupService {
     }
 
     public JSONArray getAllGroups() throws JSONException, NamingException {
-        DirContext context = new InitialDirContext(Utilities.getEnv(Utilities.URL));
+        DirContext context = new InitialDirContext(Utility.getEnv(Utility.URL));
         JSONArray jArray = new JSONArray();
 
         if (jArray != null) {
             String filter = "objectclass=groupOfUniqueNames";
             SearchControls ctrl = new SearchControls();
             ctrl.setSearchScope(SearchControls.SUBTREE_SCOPE);
-            NamingEnumeration<SearchResult> answer = context.search(Utilities.GROUP_CONTEXT, filter, ctrl);
-            Utilities.jsonUserBuilder(answer, jArray);
+            NamingEnumeration<SearchResult> answer = context.search(Utility.GROUP_CONTEXT, filter, ctrl);
+
+            while (answer.hasMore()) {
+                JSONObject cnJson = new JSONObject();
+                String cn = answer.next().getAttributes().get("cn").get().toString();
+                cnJson.put("name", cn);
+                jArray.put(cnJson);
+            }
             answer.close();
         }
         return jArray;
     }
 
     public void addUserToGroup(String uniqueMember, String groupId) throws NamingException, JSONException {
-        DirContext context = new InitialDirContext(Utilities.getEnv(Utilities.URL));
+        DirContext context = new InitialDirContext(Utility.getEnv(Utility.URL));
         BasicAttribute member = new BasicAttribute("uniqueMember",  new JSONObject(uniqueMember).get("uniquemember"));
         Attributes attributes = new BasicAttributes();
         attributes.put(member);
-        context.modifyAttributes("cn=" + groupId + "," + Utilities.GROUP_CONTEXT, DirContext.ADD_ATTRIBUTE, attributes);
+        context.modifyAttributes("cn=" + groupId + "," + Utility.GROUP_CONTEXT, DirContext.ADD_ATTRIBUTE, attributes);
     }
 
     public void deleteUserFromGroup(String uniqueMember, String groupId) throws NamingException, JSONException {
-        DirContext context = new InitialDirContext(Utilities.getEnv(Utilities.URL));
+        DirContext context = new InitialDirContext(Utility.getEnv(Utility.URL));
         BasicAttribute member = new BasicAttribute("uniqueMember", new JSONObject(uniqueMember).get("uniqueMember"));
         Attributes attributes = new BasicAttributes();
         attributes.put(member);
-        context.modifyAttributes("cn=" + groupId + "," + Utilities.GROUP_CONTEXT, DirContext.REMOVE_ATTRIBUTE, attributes);
+        context.modifyAttributes("cn=" + groupId + "," + Utility.GROUP_CONTEXT, DirContext.REMOVE_ATTRIBUTE, attributes);
     }
 
     public String findUserInGroup(String uniqueMember, String groupId) throws NamingException, JSONException {
-        DirContext context = new InitialDirContext(Utilities.getEnv(Utilities.URL));
+        DirContext context = new InitialDirContext(Utility.getEnv(Utility.URL));
         JSONArray jArray = new JSONArray();
 
         if (jArray != null) {
@@ -108,8 +86,8 @@ public class GroupService {
             String filter = "uniqueMember=" + member;
             SearchControls searchControls = new SearchControls();
             searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-            NamingEnumeration<SearchResult> answer = context.search("cn=" + groupId + "," + Utilities.GROUP_CONTEXT, filter, searchControls);
-            Utilities.jsonUserBuilder(answer, jArray);
+            NamingEnumeration<SearchResult> answer = context.search("cn=" + groupId + "," + Utility.GROUP_CONTEXT, filter, searchControls);
+            Utility.jsonUserBuilder(answer, jArray);
             answer.close();
         }
         return jArray.toString();

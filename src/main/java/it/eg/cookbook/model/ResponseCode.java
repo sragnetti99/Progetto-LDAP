@@ -6,7 +6,6 @@ public enum ResponseCode {
     DOCUMENTO_NON_TROVATO("Documento non trovato"),
     DOCUMENTO_GIA_PRESENTE("Id documento è già presente"),
     GROUP_NOT_FOUND("Gruppo non trovato"),
-    GROUP_USERS_NOT_FOUND("Utenti non presenti nel gruppo"),
     USER_NOT_FOUND("Utente non trovato"),
     USER_EXISTS("Utente già presente"),
     USER_NOT_IN_GROUP("L'utente non è presente all'interno del gruppo"),

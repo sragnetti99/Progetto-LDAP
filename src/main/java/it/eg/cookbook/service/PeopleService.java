@@ -2,7 +2,7 @@ package it.eg.cookbook.service;
 
 
 import it.eg.cookbook.model.User;
-import it.eg.cookbook.utility.Utilities;
+import it.eg.cookbook.utilities.Utility;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.springframework.stereotype.Service;
@@ -15,7 +15,7 @@ import javax.naming.directory.*;
 public class PeopleService {
 
     public String getAllUsers(String cn) throws NamingException, JSONException {
-        DirContext adminContext = new InitialDirContext(Utilities.getEnv(Utilities.BASE_URL));
+        DirContext adminContext = new InitialDirContext(Utility.getEnv(Utility.BASE_URL));
 
         JSONArray jArray = new JSONArray();
         if (jArray != null) {
@@ -23,7 +23,7 @@ public class PeopleService {
             SearchControls searchControls = new SearchControls();
             searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
             NamingEnumeration<SearchResult> answer = adminContext.search("", filter, searchControls);
-            Utilities.jsonUserBuilder(answer, jArray);
+            Utility.jsonUserBuilder(answer, jArray);
             answer.close();
         }
         adminContext.close();
@@ -32,7 +32,7 @@ public class PeopleService {
 
     public boolean save(User user) {
         try {
-            DirContext context = new InitialDirContext(Utilities.getEnv(Utilities.URL));
+            DirContext context = new InitialDirContext(Utility.getEnv(Utility.URL));
 
             Attribute objClasses = new BasicAttribute("objectClass");
             objClasses.add("person");
@@ -56,7 +56,7 @@ public class PeopleService {
             container.put(password);
             container.put(username);
 
-            String userDN = "cn=" + user.getCn() + "," + Utilities.USER_CONTEXT;
+            String userDN = "cn=" + user.getCn() + "," + Utility.USER_CONTEXT;
             context.createSubcontext(userDN, container);
             return true;
         } catch (Exception e) {
@@ -65,12 +65,12 @@ public class PeopleService {
     }
 
     public void deleteUser(String cn) throws NamingException {
-        DirContext context = new InitialDirContext(Utilities.getEnv("ldap://localhost:389"));
-        context.destroySubcontext("cn="+cn+","+Utilities.USER_CONTEXT);
+        DirContext context = new InitialDirContext(Utility.getEnv("ldap://localhost:389"));
+        context.destroySubcontext("cn="+cn+","+ Utility.USER_CONTEXT);
     }
 
     public void putUser(User user) throws NamingException {
-        DirContext context = new InitialDirContext(Utilities.getEnv(Utilities.URL));
+        DirContext context = new InitialDirContext(Utility.getEnv(Utility.URL));
 
         ModificationItem[] mods = new ModificationItem[5];
         mods[0] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("givenName", user.getGivenName()));
@@ -78,11 +78,11 @@ public class PeopleService {
         mods[2] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("mail", user.getEmail()));
         mods[3] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("userPassword", user.getPassword()));
         mods[4] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("uid", user.getUid()));
-        context.modifyAttributes("cn=" + user.getCn() + "," + Utilities.USER_CONTEXT, mods);
+        context.modifyAttributes("cn=" + user.getCn() + "," + Utility.USER_CONTEXT, mods);
     }
 
     public String findUser(String cn) throws NamingException, JSONException {
-        DirContext context = new InitialDirContext(Utilities.getEnv(Utilities.BASE_URL));
+        DirContext context = new InitialDirContext(Utility.getEnv(Utility.BASE_URL));
         JSONArray jArray = new JSONArray();
 
         if (jArray != null) {
@@ -90,7 +90,7 @@ public class PeopleService {
             SearchControls ctrl = new SearchControls();
             ctrl.setSearchScope(SearchControls.SUBTREE_SCOPE);
             NamingEnumeration<SearchResult> answer = context.search("", filter, ctrl);
-            Utilities.jsonUserBuilder(answer, jArray);
+            Utility.jsonUserBuilder(answer, jArray);
             answer.close();
         }
         return jArray.toString();

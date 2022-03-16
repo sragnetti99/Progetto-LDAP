@@ -5,7 +5,7 @@ import it.eg.cookbook.model.ResponseCode;
 import it.eg.cookbook.model.ResponseMessage;
 import it.eg.cookbook.service.GroupService;
 import it.eg.cookbook.service.PeopleService;
-import it.eg.cookbook.utility.Utilities;
+import it.eg.cookbook.utilities.Utility;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +44,7 @@ public class GroupController implements GroupApi {
 
     @DeleteMapping(path = "/{groupId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseMessage deleteUserFromGroup(@RequestBody String uniqueMember, @PathVariable String groupId) throws JSONException, NamingException {
-        if(!Utilities.isUserEmpty(this.groupService.findUserInGroup(uniqueMember, groupId))){
+        if(!Utility.isUserEmpty(this.groupService.findUserInGroup(uniqueMember, groupId))){
             this.groupService.deleteUserFromGroup(uniqueMember, groupId);
             return new ResponseMessage(true, ResponseCode.OK, "Utente eliminato correttamente dal gruppo");
         } else {
@@ -55,7 +55,7 @@ public class GroupController implements GroupApi {
     @PostMapping(path = "/{groupId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseMessage postUser(@RequestBody String uniqueMember, @PathVariable String groupId) {
         try {
-            if(!Utilities.isUserEmpty(this.peopleService.findUser(uniqueMember.substring(uniqueMember.indexOf("=")+1, uniqueMember.indexOf(","))))){
+            if(!Utility.isUserEmpty(this.peopleService.findUser(uniqueMember.substring(uniqueMember.indexOf("=")+1, uniqueMember.indexOf(","))))){
                 this.groupService.addUserToGroup(uniqueMember, groupId);
                 return new ResponseMessage(true, ResponseCode.OK, "Utente inserito correttamente nel gruppo");
             } else {

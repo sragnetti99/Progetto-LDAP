@@ -5,7 +5,7 @@ import it.eg.cookbook.model.ResponseCode;
 import it.eg.cookbook.model.ResponseMessage;
 import it.eg.cookbook.model.User;
 import it.eg.cookbook.service.PeopleService;
-import it.eg.cookbook.utility.Utilities;
+import it.eg.cookbook.utilities.Utility;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -32,7 +32,7 @@ public class PeopleController implements PeopleApi {
         String user = "";
         try {
             user = peopleService.getAllUsers(cn);
-            if(Utilities.isUserEmpty(user)){
+            if(Utility.isUserEmpty(user)){
                 throw new BusinessException(ResponseCode.USER_NOT_FOUND);
             }
         } catch (NamingException | JSONException e) {
@@ -53,7 +53,7 @@ public class PeopleController implements PeopleApi {
     @DeleteMapping(path = "/", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseMessage deleteUser(@RequestBody String cn) throws JSONException, NamingException {
         String commonName = new JSONObject(cn).getString("cn");
-        if (!Utilities.isUserEmpty(this.peopleService.findUser(commonName))) {
+        if (!Utility.isUserEmpty(this.peopleService.findUser(commonName))) {
             this.peopleService.deleteUser(commonName);
             return new ResponseMessage(true, ResponseCode.OK, "Utente eliminato correttamente");
         } else {
