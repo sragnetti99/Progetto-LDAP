@@ -20,14 +20,7 @@ public interface PeopleApi {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok", response = String.class)
     })
-    String getAllUsers(@PathVariable(required = false) String cn)  throws NamingException, JSONException;
-
-  /*  @ApiOperation(value = "Ritorna l'utente cercato")
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok", response = String.class)
-    })
-    String findUser(@RequestParam String cn) throws JSONException, NamingException;*/
-
+    String getAllUsers(@PathVariable(required = false) String cn);
 
     @ApiOperation(value = "Aggiunge un nuovo utente")
     @ApiResponses(value = {

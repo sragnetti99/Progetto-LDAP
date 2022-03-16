@@ -28,19 +28,18 @@ public class PeopleController implements PeopleApi {
     }
 
     @GetMapping(path = {"/", "/{cn}"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public String getAllUsers(@PathVariable(required = false) String cn) throws NamingException, JSONException {
-        return peopleService.getAllUsers(cn);
-    }
-
-   /* @GetMapping(path = "/", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String findUser(@RequestParam String cn) throws JSONException, NamingException {
-        String user = peopleService.findUser(cn);
-        if(Utilities.isUserEmpty(user)){
-            throw new BusinessException(ResponseCode.USER_NOT_FOUND);
-        } else {
-            return user;
+    public String getAllUsers(@PathVariable(required = false) String cn) {
+        String user = "";
+        try {
+            user = peopleService.getAllUsers(cn);
+            if(Utilities.isUserEmpty(user)){
+                throw new BusinessException(ResponseCode.USER_NOT_FOUND);
+            }
+        } catch (NamingException | JSONException e) {
+            e.printStackTrace();
         }
-    }*/
+        return user;
+    }
 
     @PostMapping(path = "/", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseMessage postUser(@RequestBody User user) {

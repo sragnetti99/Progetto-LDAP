@@ -12,8 +12,6 @@ import lombok.NoArgsConstructor;
 @ApiModel
 public class User {
 
-   // public void User(){}
-
     @ApiModelProperty(notes = "Common Name", position = 1, required = true, example = "sragnetti")
     private String cn;
 
