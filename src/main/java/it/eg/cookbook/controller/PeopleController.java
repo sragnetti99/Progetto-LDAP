@@ -20,25 +20,20 @@ import javax.naming.NamingException;
 @Slf4j
 public class PeopleController implements PeopleApi {
 
+    @Autowired
     private PeopleService peopleService;
 
-    @Autowired
-    public PeopleController(PeopleService peopleService) {
-        this.peopleService = peopleService;
-    }
-
-    @GetMapping(path = {"/", "/{cn}"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public String getAllUsers(@PathVariable(required = false) String cn) {
-        String user = "";
+    @GetMapping(path = {"/"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    public String getAllUsers() {
+        String users = "";
         try {
-            user = peopleService.getAllUsers(cn);
-            if(Utility.isUserEmpty(user)){
-                throw new BusinessException(ResponseCode.USER_NOT_FOUND);
-            }
-        } catch (NamingException | JSONException e) {
+            users = peopleService.getAllUsers();
+        } catch (NamingException e) {
+            e.printStackTrace();
+        } catch (JSONException e) {
             e.printStackTrace();
         }
-        return user;
+        return users;
     }
 
     @PostMapping(path = "/", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -53,11 +48,11 @@ public class PeopleController implements PeopleApi {
     @DeleteMapping(path = "/", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseMessage deleteUser(@RequestBody String cn) throws JSONException, NamingException {
         String commonName = new JSONObject(cn).getString("cn");
-        if (!Utility.isUserEmpty(this.peopleService.findUser(commonName))) {
+        if (this.peopleService.findUser(commonName).isEmpty()) {
+            throw new BusinessException(ResponseCode.USER_NOT_FOUND);
+        } else {
             this.peopleService.deleteUser(commonName);
             return new ResponseMessage(true, ResponseCode.OK, "Utente eliminato correttamente");
-        } else {
-            throw new BusinessException(ResponseCode.USER_NOT_FOUND);
         }
     }
 

@@ -44,25 +44,27 @@ public class GroupController implements GroupApi {
 
     @DeleteMapping(path = "/{groupId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseMessage deleteUserFromGroup(@RequestBody String uniqueMember, @PathVariable String groupId) throws JSONException, NamingException {
-        if(!Utility.isUserEmpty(this.groupService.findUserInGroup(uniqueMember, groupId))){
+        if(this.groupService.findUserInGroup(uniqueMember, groupId).trim().isEmpty()){
+            throw new BusinessException(ResponseCode.USER_NOT_IN_GROUP);
+        } else {
             this.groupService.deleteUserFromGroup(uniqueMember, groupId);
             return new ResponseMessage(true, ResponseCode.OK, "Utente eliminato correttamente dal gruppo");
-        } else {
-            throw new BusinessException(ResponseCode.USER_NOT_IN_GROUP);
         }
     }
 
     @PostMapping(path = "/{groupId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseMessage postUser(@RequestBody String uniqueMember, @PathVariable String groupId) {
         try {
-            if(!Utility.isUserEmpty(this.peopleService.findUser(uniqueMember.substring(uniqueMember.indexOf("=")+1, uniqueMember.indexOf(","))))){
+            if(this.peopleService.findUser(uniqueMember.substring(uniqueMember.indexOf("=")+1, uniqueMember.indexOf(","))).trim().isEmpty()){
+                throw new BusinessException(ResponseCode.USER_NOT_FOUND);
+            } else {
                 this.groupService.addUserToGroup(uniqueMember, groupId);
                 return new ResponseMessage(true, ResponseCode.OK, "Utente inserito correttamente nel gruppo");
-            } else {
-                throw new BusinessException(ResponseCode.USER_NOT_FOUND);
             }
-        } catch (NamingException | JSONException e) {
+        } catch (NamingException e) {
             throw new BusinessException(ResponseCode.ALREADY_ADDED);
+        } catch (JSONException e) {
+            throw new BusinessException(ResponseCode.USER_NOT_FOUND);
         }
     }
 }

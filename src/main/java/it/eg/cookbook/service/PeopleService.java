@@ -14,12 +14,12 @@ import javax.naming.directory.*;
 @Service
 public class PeopleService {
 
-    public String getAllUsers(String cn) throws NamingException, JSONException {
+    public String getAllUsers() throws NamingException, JSONException {
         DirContext adminContext = new InitialDirContext(Utility.getEnv(Utility.BASE_URL));
 
         JSONArray jArray = new JSONArray();
         if (jArray != null) {
-            String filter = cn != null ? "(&(objectclass=person)(cn="+ cn + "))" : "objectclass=person";
+            String filter = "objectclass=person";
             SearchControls searchControls = new SearchControls();
             searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
             NamingEnumeration<SearchResult> answer = adminContext.search("", filter, searchControls);

@@ -23,7 +23,7 @@ public class SwaggerConfiguration {
                 .apiInfo(apiInfo())
                 .useDefaultResponseMessages(false)
                 .select()
-                .apis(RequestHandlerSelectors.basePackage("it.eg.cookbook.controller"))
+                .apis(RequestHandlerSelectors.any())
                 .paths(PathSelectors.any())
                 .build();
     }

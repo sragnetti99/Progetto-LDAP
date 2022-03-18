@@ -34,7 +34,7 @@ public interface GroupApi {
     @ApiOperation(value = "Elimina un utente da un gruppo")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok", response = ResponseMessage.class),
-            @ApiResponse(code = 400, message = "Impossibile cancellare l'utente dal gruppo")
+            @ApiResponse(code = 409, message = "Impossibile cancellare l'utente dal gruppo")
     })
     ResponseMessage deleteUserFromGroup(@RequestBody String uniqueMember, @PathVariable String groupId) throws JSONException, NamingException;
 
@@ -42,7 +42,7 @@ public interface GroupApi {
     @ApiOperation(value = "Aggiunge un utente ad un gruppo")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok", response = String.class),
-            @ApiResponse(code = 400, message = "Impossibile inserire l'utente nel gruppo", response = ResponseMessage.class)
+            @ApiResponse(code = 409, message = "Impossibile inserire l'utente nel gruppo", response = ResponseMessage.class)
     })
     ResponseMessage postUser(@RequestBody String uniqueMember, @PathVariable("id") String groupId);
 

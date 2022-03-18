@@ -20,7 +20,7 @@ public interface PeopleApi {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok", response = String.class)
     })
-    String getAllUsers(@PathVariable(required = false) String cn);
+    String getAllUsers();
 
     @ApiOperation(value = "Aggiunge un nuovo utente")
     @ApiResponses(value = {

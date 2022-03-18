@@ -30,10 +30,6 @@ public class Utility {
         return environment;
     }
 
-    public static boolean isUserEmpty(String user){
-        return user.substring(1, user.length()-1).length() == 0;
-    }
-
     public static  void jsonUserBuilder(NamingEnumeration<SearchResult> answer, JSONArray jArray) throws NamingException, JSONException {
         while (answer.hasMore()) {
             SearchResult result = (SearchResult) answer.next();
