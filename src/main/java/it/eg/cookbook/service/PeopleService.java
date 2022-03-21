@@ -130,7 +130,7 @@ public class PeopleService {
     }
 
     public void deleteUser(String cn) throws NamingException {
-        DirContext context = new InitialDirContext(Utility.getEnv("ldap://localhost:389"));
+        DirContext context = new InitialDirContext(Utility.getEnv(Utility.URL.substring(0, Utility.URL.length())));
         context.destroySubcontext("cn="+cn+","+ Utility.USER_CONTEXT);
     }
 
