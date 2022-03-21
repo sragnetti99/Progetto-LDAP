@@ -1,20 +1,23 @@
 package it.eg.cookbook.service;
 
-
 import it.eg.cookbook.model.User;
+import it.eg.cookbook.utilities.Sha512Hasher;
 import it.eg.cookbook.utilities.Utility;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
+
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.*;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
+import javax.sound.midi.SysexMessage;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
-import java.util.Random;
+import java.security.SecureRandom;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.KeySpec;
 
 @Service
 public class PeopleService {
@@ -70,6 +73,7 @@ public class PeopleService {
         return generatedPassword;
     }
     */
+
     private String hashPassword(String plainTextPassword) {
         return BCrypt.hashpw(plainTextPassword, BCrypt.gensalt());
     }
@@ -89,14 +93,23 @@ public class PeopleService {
             Attribute givenname = new BasicAttribute("givenName", user.getGivenName());
             Attribute sn = new BasicAttribute("sn", user.getSn());
             Attribute mail = new BasicAttribute("mail", user.getEmail());
-            Attribute password = new BasicAttribute("userPassword", hashPassword(user.getPassword()));
+            Attribute username = new BasicAttribute("uid", user.getUid());
+
+            // Attribute password = new BasicAttribute("userPassword", hashPassword(user.getPassword()));
+
+
+            Sha512Hasher hasher = new Sha512Hasher();
+            byte[] salt = new byte[16];
+            SecureRandom secureRandom = new SecureRandom();
+            secureRandom.nextBytes(salt);
+            Attribute password = new BasicAttribute("userPassword", hasher.hash(user.getPassword(), salt));
+            System.out.println( hasher.hash(user.getPassword(), salt));
 
            /*
              PROGETTO DATABASE:
             String salt = this.generateSalt();
             String passwordHash = this.generateHash(user.getPassword(), salt.substring(1, salt.length() - 1));
             Attribute password = new BasicAttribute("userPassword", passwordHash);*/
-            Attribute username = new BasicAttribute("uid", user.getUid());
 
             Attributes container = new BasicAttributes();
             container.put(objClasses);
