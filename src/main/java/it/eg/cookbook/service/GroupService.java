@@ -1,7 +1,5 @@
 package it.eg.cookbook.service;
 
-
-import it.eg.cookbook.controller.PeopleController;
 import it.eg.cookbook.utilities.Utility;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -88,7 +86,7 @@ public class GroupService {
 
     public void deleteUserFromGroup(String uniqueMember, String groupId) throws NamingException, JSONException {
         DirContext context = new InitialDirContext(Utility.getEnv(Utility.URL));
-        BasicAttribute member = new BasicAttribute("uniqueMember", new JSONObject(uniqueMember).get("uniqueMember"));
+        BasicAttribute member = new BasicAttribute("uniquemember", new JSONObject(uniqueMember).get("uniquemember"));
         Attributes attributes = new BasicAttributes();
         attributes.put(member);
         context.modifyAttributes("cn=" + groupId + "," + Utility.GROUP_CONTEXT, DirContext.REMOVE_ATTRIBUTE, attributes);
@@ -99,8 +97,8 @@ public class GroupService {
         JSONArray jArray = new JSONArray();
 
         if (jArray != null) {
-            String member = new JSONObject(uniqueMember).get("uniqueMember").toString();
-            String filter = "uniqueMember=" + member;
+            String member = new JSONObject(uniqueMember).get("uniquemember").toString();
+            String filter = "uniquemember=" + member;
             SearchControls searchControls = new SearchControls();
             searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
             NamingEnumeration<SearchResult> answer = context.search("cn=" + groupId + "," + Utility.GROUP_CONTEXT, filter, searchControls);

@@ -4,8 +4,6 @@ import it.eg.cookbook.error.BusinessException;
 import it.eg.cookbook.model.ResponseCode;
 import it.eg.cookbook.model.ResponseMessage;
 import it.eg.cookbook.service.GroupService;
-import it.eg.cookbook.service.PeopleService;
-import it.eg.cookbook.utilities.Utility;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,21 +11,14 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import javax.naming.NamingException;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/group")
 @Slf4j
 public class GroupController implements GroupApi {
 
-    private GroupService groupService;
-    private PeopleService peopleService;
-
     @Autowired
-    public GroupController(GroupService groupService) {
-        this.groupService = groupService;
-        this.peopleService = new PeopleService();
-    }
+    private GroupService groupService;
 
     @GetMapping(path = "/", produces = MediaType.APPLICATION_JSON_VALUE)
     public String getAllGroups() throws NamingException, JSONException {

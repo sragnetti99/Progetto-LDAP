@@ -5,7 +5,6 @@ import it.eg.cookbook.model.ResponseCode;
 import it.eg.cookbook.model.ResponseMessage;
 import it.eg.cookbook.model.User;
 import it.eg.cookbook.service.PeopleService;
-import it.eg.cookbook.utilities.Utility;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -28,9 +27,7 @@ public class PeopleController implements PeopleApi {
         String users = "";
         try {
             users = peopleService.getAllUsers();
-        } catch (NamingException e) {
-            e.printStackTrace();
-        } catch (JSONException e) {
+        } catch (NamingException | JSONException e) {
             e.printStackTrace();
         }
         return users;

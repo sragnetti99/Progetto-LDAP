@@ -4,17 +4,13 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import it.eg.cookbook.model.Document;
 import it.eg.cookbook.model.ResponseMessage;
 import org.json.JSONException;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.naming.NamingException;
-import java.util.ArrayList;
-import java.util.List;
 
 @Api(value = "/api/v1/group", produces = MediaType.APPLICATION_JSON_VALUE, tags = "Rest API - Group CRUD")
 public interface GroupApi {

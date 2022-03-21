@@ -5,11 +5,16 @@ import it.eg.cookbook.model.User;
 import it.eg.cookbook.utilities.Utility;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
-
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.*;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
+import java.util.Random;
 
 @Service
 public class PeopleService {
@@ -30,7 +35,47 @@ public class PeopleService {
         return jArray.toString();
     }
 
+    /*      PROGETTO DATABASE:
+    private String generateSalt() {
+        int lenght = 4;
+        String abcCapitals = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        String abcLowerCase = "abcdefghijklmnopqrstuvwxyz";
+        String numbers = "01234567890123456789";
+        String total = abcCapitals + abcLowerCase + numbers;
+        String response = "";
+        char letters[] = new char[lenght];
+        for (int i = 0; i < lenght; i++) {
+            Random r = new Random();
+            char letter = total.charAt(r.nextInt(total.length()));
+            letters[i] = letter;
+        }
+        response = Arrays.toString(letters).replaceAll("\\s+", "");
+        response = response.replaceAll(",", "");
+        return response;
+    }
+
+    private String generateHash(String password, String salt) {
+        String generatedPassword = null;
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-512");
+            md.update(salt.getBytes(StandardCharsets.UTF_8));
+            byte[] bytes = md.digest(password.getBytes(StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < bytes.length; i++) {
+                sb.append(Integer.toString((bytes[i] & 0xff) + 0x100, 16).substring(1));
+            }
+            generatedPassword = sb.toString();
+        } catch (NoSuchAlgorithmException e) {
+        }
+        return generatedPassword;
+    }
+    */
+    private String hashPassword(String plainTextPassword) {
+        return BCrypt.hashpw(plainTextPassword, BCrypt.gensalt());
+    }
+
     public boolean save(User user) {
+
         try {
             DirContext context = new InitialDirContext(Utility.getEnv(Utility.URL));
 
@@ -44,7 +89,13 @@ public class PeopleService {
             Attribute givenname = new BasicAttribute("givenName", user.getGivenName());
             Attribute sn = new BasicAttribute("sn", user.getSn());
             Attribute mail = new BasicAttribute("mail", user.getEmail());
-            Attribute password = new BasicAttribute("userPassword", user.getPassword());
+            Attribute password = new BasicAttribute("userPassword", hashPassword(user.getPassword()));
+
+           /*
+             PROGETTO DATABASE:
+            String salt = this.generateSalt();
+            String passwordHash = this.generateHash(user.getPassword(), salt.substring(1, salt.length() - 1));
+            Attribute password = new BasicAttribute("userPassword", passwordHash);*/
             Attribute username = new BasicAttribute("uid", user.getUid());
 
             Attributes container = new BasicAttributes();
@@ -60,6 +111,7 @@ public class PeopleService {
             context.createSubcontext(userDN, container);
             return true;
         } catch (Exception e) {
+            e.printStackTrace();
             return false;
         }
     }
