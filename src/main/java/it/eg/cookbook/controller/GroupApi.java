@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.naming.NamingException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Api(value = "/api/v1/group", produces = MediaType.APPLICATION_JSON_VALUE, tags = "Rest API - Group CRUD")
@@ -44,6 +45,6 @@ public interface GroupApi {
             @ApiResponse(code = 200, message = "Ok", response = String.class),
             @ApiResponse(code = 409, message = "Impossibile inserire l'utente nel gruppo", response = ResponseMessage.class)
     })
-    ResponseMessage postUser(@RequestBody String uniqueMember, @PathVariable("id") String groupId);
+    ResponseMessage postUser(@RequestBody String uniqueMembers, @PathVariable("id") String groupId);
 
 }

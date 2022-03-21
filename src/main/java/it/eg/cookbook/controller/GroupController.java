@@ -13,6 +13,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import javax.naming.NamingException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/group")
@@ -53,17 +54,18 @@ public class GroupController implements GroupApi {
     }
 
     @PostMapping(path = "/{groupId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseMessage postUser(@RequestBody String uniqueMember, @PathVariable String groupId) {
+    public ResponseMessage postUser(@RequestBody String uniqueMembers, @PathVariable String groupId) {
         try {
-            if(this.peopleService.findUser(uniqueMember.substring(uniqueMember.indexOf("=")+1, uniqueMember.indexOf(","))).trim().isEmpty()){
-                throw new BusinessException(ResponseCode.USER_NOT_FOUND);
-            } else {
-                this.groupService.addUserToGroup(uniqueMember, groupId);
+            if(this.groupService.addUserToGroup(uniqueMembers, groupId)){
                 return new ResponseMessage(true, ResponseCode.OK, "Utente inserito correttamente nel gruppo");
+            } else {
+                throw new BusinessException(ResponseCode.WARNING_ADD_USERS);
             }
         } catch (NamingException e) {
+            e.printStackTrace();
             throw new BusinessException(ResponseCode.ALREADY_ADDED);
         } catch (JSONException e) {
+            e.printStackTrace();
             throw new BusinessException(ResponseCode.USER_NOT_FOUND);
         }
     }

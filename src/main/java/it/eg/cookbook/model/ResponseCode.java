@@ -10,6 +10,7 @@ public enum ResponseCode {
     USER_EXISTS("Utente già presente"),
     USER_NOT_IN_GROUP("L'utente non è presente all'interno del gruppo"),
     ALREADY_ADDED("L'utente fa già parte del gruppo"),
+    WARNING_ADD_USERS("Uno o più utenti non esistono, ma gli altri sono stati aggiunti correttamente al gruppo"),
     GENERIC("Errore generico");
 
     private String message;

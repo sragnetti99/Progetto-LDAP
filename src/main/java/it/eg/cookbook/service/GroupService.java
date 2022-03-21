@@ -1,10 +1,12 @@
 package it.eg.cookbook.service;
 
 
+import it.eg.cookbook.controller.PeopleController;
 import it.eg.cookbook.utilities.Utility;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.naming.NamingEnumeration;
@@ -13,6 +15,9 @@ import javax.naming.directory.*;
 
 @Service
 public class GroupService {
+
+    @Autowired
+    private PeopleService peopleService;
 
     public String getUsersInGroup(String groupId) throws NamingException, JSONException {
         String groupDN = "cn=" + groupId + "," + "ou=groups," + Utility.BASE_DN;
@@ -61,12 +66,24 @@ public class GroupService {
         return jArray;
     }
 
-    public void addUserToGroup(String uniqueMember, String groupId) throws NamingException, JSONException {
+    public boolean addUserToGroup(String uniqueMembers, String groupId) throws NamingException, JSONException {
         DirContext context = new InitialDirContext(Utility.getEnv(Utility.URL));
-        BasicAttribute member = new BasicAttribute("uniqueMember",  new JSONObject(uniqueMember).get("uniquemember"));
         Attributes attributes = new BasicAttributes();
-        attributes.put(member);
-        context.modifyAttributes("cn=" + groupId + "," + Utility.GROUP_CONTEXT, DirContext.ADD_ATTRIBUTE, attributes);
+        JSONObject jsonObject = new JSONObject(uniqueMembers);
+        JSONArray members = jsonObject.getJSONArray("uniquemember");
+        boolean isUserAdded = true;
+        for (int i = 0; i < members.length(); i++) {
+            String cn = members.getString(i).substring(members.getString(i).indexOf("=")+1, members.getString(i).indexOf(","));
+            if (this.peopleService.findUser(cn).length()<=2) {
+                isUserAdded = false;
+            } else {
+                String currentMember = members.getString(i);
+                BasicAttribute memberAtt = new BasicAttribute("uniqueMember", currentMember);
+                attributes.put(memberAtt);
+                context.modifyAttributes("cn=" + groupId + "," + Utility.GROUP_CONTEXT, DirContext.ADD_ATTRIBUTE, attributes);
+            }
+        }
+        return isUserAdded;
     }
 
     public void deleteUserFromGroup(String uniqueMember, String groupId) throws NamingException, JSONException {
