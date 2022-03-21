@@ -10,6 +10,9 @@ import org.springframework.stereotype.Service;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class GroupService {
@@ -47,24 +50,46 @@ public class GroupService {
         DirContext context = new InitialDirContext(Utility.getEnv(Utility.URL));
         JSONArray jArray = new JSONArray();
 
-        if (jArray != null) {
-            String filter = "objectclass=groupOfUniqueNames";
-            SearchControls ctrl = new SearchControls();
-            ctrl.setSearchScope(SearchControls.SUBTREE_SCOPE);
-            NamingEnumeration<SearchResult> answer = context.search(Utility.GROUP_CONTEXT, filter, ctrl);
+        String filter = "objectclass=groupOfUniqueNames";
+        SearchControls ctrl = new SearchControls();
+        ctrl.setSearchScope(SearchControls.SUBTREE_SCOPE);
+        NamingEnumeration<SearchResult> answer = context.search(Utility.GROUP_CONTEXT, filter, ctrl);
 
-            while (answer.hasMore()) {
-                JSONObject cnJson = new JSONObject();
-                String cn = answer.next().getAttributes().get("cn").get().toString();
-                cnJson.put("name", cn);
-                jArray.put(cnJson);
-            }
-            answer.close();
+        while (answer.hasMore()) {
+            JSONObject cnJson = new JSONObject();
+            String cn = answer.next().getAttributes().get("cn").get().toString();
+            cnJson.put("name", cn);
+            jArray.put(cnJson);
         }
+        answer.close();
+
         return jArray;
     }
 
-    public boolean addUserToGroup(String uniqueMembers, String groupId) throws NamingException, JSONException {
+    public void deleteUserFromGroup(String uniqueMember, String groupId) throws NamingException, JSONException {
+        DirContext context = new InitialDirContext(Utility.getEnv(Utility.URL));
+        BasicAttribute member = new BasicAttribute("uniquemember", new JSONObject(uniqueMember).get("uniquemember"));
+        Attributes attributes = new BasicAttributes();
+        attributes.put(member);
+        context.modifyAttributes("cn=" + groupId + "," + Utility.GROUP_CONTEXT, DirContext.REMOVE_ATTRIBUTE, attributes);
+    }
+
+    public String findUserInGroup(String uniqueMember, String groupId) throws NamingException, JSONException {
+        DirContext context = new InitialDirContext(Utility.getEnv(Utility.URL));
+        JSONArray jArray = new JSONArray();
+
+        String member = new JSONObject(uniqueMember).get("uniquemember").toString();
+        String filter = "uniquemember=" + member;
+        SearchControls searchControls = new SearchControls();
+        searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+        NamingEnumeration<SearchResult> answer = context.search("cn=" + groupId + "," + Utility.GROUP_CONTEXT, filter, searchControls);
+        Utility.jsonUserBuilder(answer, jArray);
+        answer.close();
+
+        return jArray.toString();
+    }
+
+   /* public boolean addUserToGroup(String uniqueMembers, String groupId) throws NamingException, JSONException {
         DirContext context = new InitialDirContext(Utility.getEnv(Utility.URL));
         Attributes attributes = new BasicAttributes();
         JSONObject jsonObject = new JSONObject(uniqueMembers);
@@ -83,28 +108,29 @@ public class GroupService {
         }
         return isUserAdded;
     }
+    */
 
-    public void deleteUserFromGroup(String uniqueMember, String groupId) throws NamingException, JSONException {
-        DirContext context = new InitialDirContext(Utility.getEnv(Utility.URL));
-        BasicAttribute member = new BasicAttribute("uniquemember", new JSONObject(uniqueMember).get("uniquemember"));
-        Attributes attributes = new BasicAttributes();
-        attributes.put(member);
-        context.modifyAttributes("cn=" + groupId + "," + Utility.GROUP_CONTEXT, DirContext.REMOVE_ATTRIBUTE, attributes);
+    // MAP --> cn utente, esiste ? true : false
+    public Map<String, Boolean> getUserMap(String users) throws JSONException, NamingException {
+        Map<String, Boolean> map = new HashMap<>();
+        JSONObject jsonObject = new JSONObject(users);
+        JSONArray members = jsonObject.getJSONArray("uniquemember");
+        for (int i = 0; i < members.length(); i++) {
+            String cn = members.getString(i).substring(members.getString(i).indexOf("=") + 1, members.getString(i).indexOf(","));
+            map.put(cn, this.peopleService.findUser(cn).length() > 2);
+        }
+        return map;
     }
 
-    public String findUserInGroup(String uniqueMember, String groupId) throws NamingException, JSONException {
+    public void addUsersToGroup(List<String> usersToAdd, String groupId) throws NamingException {
         DirContext context = new InitialDirContext(Utility.getEnv(Utility.URL));
-        JSONArray jArray = new JSONArray();
-
-        if (jArray != null) {
-            String member = new JSONObject(uniqueMember).get("uniquemember").toString();
-            String filter = "uniquemember=" + member;
-            SearchControls searchControls = new SearchControls();
-            searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-            NamingEnumeration<SearchResult> answer = context.search("cn=" + groupId + "," + Utility.GROUP_CONTEXT, filter, searchControls);
-            Utility.jsonUserBuilder(answer, jArray);
-            answer.close();
+        Attributes attributes = new BasicAttributes();
+        for (int i = 0; i < usersToAdd.size(); i++) {
+            String currentMember = usersToAdd.get(i);
+            System.out.println(currentMember);
+            BasicAttribute memberAtt = new BasicAttribute("uniquemember", "cn=" + currentMember + "," + Utility.USER_CONTEXT);
+            attributes.put(memberAtt);
+            context.modifyAttributes("cn=" + groupId + "," + Utility.GROUP_CONTEXT, DirContext.ADD_ATTRIBUTE, attributes);
         }
-        return jArray.toString();
     }
 }
