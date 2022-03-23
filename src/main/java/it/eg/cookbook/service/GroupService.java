@@ -5,12 +5,15 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
+import javax.naming.Context;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.*;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
@@ -20,9 +23,22 @@ public class GroupService {
     @Autowired
     private PeopleService peopleService;
 
+    @Autowired
+    private Environment env;
+
+    private Hashtable<String, String> getLdapContextEnv(String url) {
+        Hashtable<String, String> environment = new Hashtable<>();
+        environment.put(Context.INITIAL_CONTEXT_FACTORY, env.getProperty("ldap.context"));
+        environment.put(Context.PROVIDER_URL, url);
+        environment.put(Context.SECURITY_AUTHENTICATION, "simple");
+        environment.put(Context.SECURITY_PRINCIPAL, env.getProperty("ldap.username"));
+        environment.put(Context.SECURITY_CREDENTIALS, env.getProperty("ldap.password"));
+        return environment;
+    }
+
     public String getUsersInGroup(String groupId) throws NamingException, JSONException {
         String groupDN = "cn=" + groupId + "," + "ou=groups," + Utility.BASE_DN;
-        DirContext context = new InitialDirContext(Utility.getEnv(Utility.URL));
+        DirContext context = new InitialDirContext(this.getLdapContextEnv(Utility.URL));
 
         JSONArray jArray = new JSONArray();
         String filter = "uniqueMember=*";
@@ -47,7 +63,7 @@ public class GroupService {
     }
 
     public JSONArray getAllGroups() throws JSONException, NamingException {
-        DirContext context = new InitialDirContext(Utility.getEnv(Utility.URL));
+        DirContext context = new InitialDirContext(this.getLdapContextEnv(Utility.URL));
         JSONArray jArray = new JSONArray();
 
         String filter = "objectclass=groupOfUniqueNames";
@@ -67,7 +83,7 @@ public class GroupService {
     }
 
     public void deleteUserFromGroup(String uniqueMember, String groupId) throws NamingException, JSONException {
-        DirContext context = new InitialDirContext(Utility.getEnv(Utility.URL));
+        DirContext context = new InitialDirContext(this.getLdapContextEnv(Utility.URL));
         BasicAttribute member = new BasicAttribute("uniquemember", new JSONObject(uniqueMember).get("uniquemember"));
         Attributes attributes = new BasicAttributes();
         attributes.put(member);
@@ -75,7 +91,7 @@ public class GroupService {
     }
 
     public String findUserInGroup(String uniqueMember, String groupId) throws NamingException, JSONException {
-        DirContext context = new InitialDirContext(Utility.getEnv(Utility.URL));
+        DirContext context = new InitialDirContext(this.getLdapContextEnv(Utility.URL));
         JSONArray jArray = new JSONArray();
 
         String member = new JSONObject(uniqueMember).get("uniquemember").toString();
@@ -123,7 +139,7 @@ public class GroupService {
     }
 
     public void addUsersToGroup(List<String> usersToAdd, String groupId) throws NamingException {
-        DirContext context = new InitialDirContext(Utility.getEnv(Utility.URL));
+        DirContext context = new InitialDirContext(this.getLdapContextEnv(Utility.URL));
         Attributes attributes = new BasicAttributes();
         for (int i = 0; i < usersToAdd.size(); i++) {
             String currentMember = usersToAdd.get(i);

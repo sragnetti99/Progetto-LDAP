@@ -5,25 +5,39 @@ import it.eg.cookbook.utilities.Sha512Hasher;
 import it.eg.cookbook.utilities.Utility;
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.springframework.security.crypto.bcrypt.BCrypt;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
+import javax.naming.Context;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.*;
-import javax.sound.midi.SysexMessage;
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.KeySpec;
+import java.util.Hashtable;
+
 
 @Service
 public class PeopleService {
 
+    @Autowired
+    private Environment env;
+
+    private Hashtable<String, String> getLdapContextEnv(String url) {
+        Hashtable<String, String> environment = new Hashtable<>();
+        environment.put(Context.INITIAL_CONTEXT_FACTORY, env.getProperty("ldap.context"));
+        environment.put(Context.PROVIDER_URL, url);
+        environment.put(Context.SECURITY_AUTHENTICATION, "simple");
+        environment.put(Context.SECURITY_PRINCIPAL, env.getProperty("ldap.username"));
+        environment.put(Context.SECURITY_CREDENTIALS, env.getProperty("ldap.password"));
+        return environment;
+    }
+
+    /*private String hashPassword(String plainTextPassword) {
+        return BCrypt.hashpw(plainTextPassword, BCrypt.gensalt());
+    }*/
     public String getAllUsers() throws NamingException, JSONException {
-        DirContext adminContext = new InitialDirContext(Utility.getEnv(Utility.BASE_URL));
+        DirContext adminContext = new InitialDirContext(this.getLdapContextEnv(Utility.BASE_URL));
 
         JSONArray jArray = new JSONArray();
         if (jArray != null) {
@@ -38,50 +52,10 @@ public class PeopleService {
         return jArray.toString();
     }
 
-    /*      PROGETTO DATABASE:
-    private String generateSalt() {
-        int lenght = 4;
-        String abcCapitals = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        String abcLowerCase = "abcdefghijklmnopqrstuvwxyz";
-        String numbers = "01234567890123456789";
-        String total = abcCapitals + abcLowerCase + numbers;
-        String response = "";
-        char letters[] = new char[lenght];
-        for (int i = 0; i < lenght; i++) {
-            Random r = new Random();
-            char letter = total.charAt(r.nextInt(total.length()));
-            letters[i] = letter;
-        }
-        response = Arrays.toString(letters).replaceAll("\\s+", "");
-        response = response.replaceAll(",", "");
-        return response;
-    }
-
-    private String generateHash(String password, String salt) {
-        String generatedPassword = null;
-        try {
-            MessageDigest md = MessageDigest.getInstance("SHA-512");
-            md.update(salt.getBytes(StandardCharsets.UTF_8));
-            byte[] bytes = md.digest(password.getBytes(StandardCharsets.UTF_8));
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < bytes.length; i++) {
-                sb.append(Integer.toString((bytes[i] & 0xff) + 0x100, 16).substring(1));
-            }
-            generatedPassword = sb.toString();
-        } catch (NoSuchAlgorithmException e) {
-        }
-        return generatedPassword;
-    }
-    */
-
-    private String hashPassword(String plainTextPassword) {
-        return BCrypt.hashpw(plainTextPassword, BCrypt.gensalt());
-    }
-
     public boolean save(User user) {
 
         try {
-            DirContext context = new InitialDirContext(Utility.getEnv(Utility.URL));
+            DirContext context = new InitialDirContext(this.getLdapContextEnv(Utility.URL));
 
             Attribute objClasses = new BasicAttribute("objectClass");
             objClasses.add("person");
@@ -95,7 +69,7 @@ public class PeopleService {
             Attribute mail = new BasicAttribute("mail", user.getEmail());
             Attribute username = new BasicAttribute("uid", user.getUid());
 
-            // Attribute password = new BasicAttribute("userPassword", hashPassword(user.getPassword()));
+         //   Attribute password = new BasicAttribute("userPassword", hashPassword(user.getPassword()));
 
 
             Sha512Hasher hasher = new Sha512Hasher();
@@ -103,13 +77,9 @@ public class PeopleService {
             SecureRandom secureRandom = new SecureRandom();
             secureRandom.nextBytes(salt);
             Attribute password = new BasicAttribute("userPassword", hasher.hash(user.getPassword(), salt));
-            System.out.println( hasher.hash(user.getPassword(), salt));
 
-           /*
-             PROGETTO DATABASE:
-            String salt = this.generateSalt();
-            String passwordHash = this.generateHash(user.getPassword(), salt.substring(1, salt.length() - 1));
-            Attribute password = new BasicAttribute("userPassword", passwordHash);*/
+
+          //  System.out.println( hasher.hash(user.getPassword(), salt));
 
             Attributes container = new BasicAttributes();
             container.put(objClasses);
@@ -130,12 +100,12 @@ public class PeopleService {
     }
 
     public void deleteUser(String cn) throws NamingException {
-        DirContext context = new InitialDirContext(Utility.getEnv(Utility.URL.substring(0, Utility.URL.length())));
+        DirContext context = new InitialDirContext(this.getLdapContextEnv(Utility.URL.substring(0, Utility.URL.length())));
         context.destroySubcontext("cn="+cn+","+ Utility.USER_CONTEXT);
     }
 
     public void putUser(User user) throws NamingException {
-        DirContext context = new InitialDirContext(Utility.getEnv(Utility.URL));
+        DirContext context = new InitialDirContext(this.getLdapContextEnv(Utility.URL));
 
         ModificationItem[] mods = new ModificationItem[5];
         mods[0] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("givenName", user.getGivenName()));
@@ -147,7 +117,7 @@ public class PeopleService {
     }
 
     public String findUser(String cn) throws NamingException, JSONException {
-        DirContext context = new InitialDirContext(Utility.getEnv(Utility.BASE_URL));
+        DirContext context = new InitialDirContext(this.getLdapContextEnv(Utility.BASE_URL));
         JSONArray jArray = new JSONArray();
 
         if (jArray != null) {

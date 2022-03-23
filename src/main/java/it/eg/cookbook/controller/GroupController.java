@@ -1,5 +1,6 @@
 package it.eg.cookbook.controller;
 
+import it.eg.cookbook.config.LdapProperties;
 import it.eg.cookbook.error.BusinessException;
 import it.eg.cookbook.model.ResponseCode;
 import it.eg.cookbook.model.ResponseMessage;

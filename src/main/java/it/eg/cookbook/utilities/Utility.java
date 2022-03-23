@@ -1,10 +1,8 @@
 package it.eg.cookbook.utilities;
 
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import javax.naming.Context;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
@@ -20,15 +18,15 @@ public class Utility {
     public static final String USER_CONTEXT = "ou=people,dc=imolinfo,dc=it";
     public static final String GROUP_CONTEXT = "ou=groups,dc=imolinfo,dc=it";
 
-    public static Hashtable<String, String> getEnv(String url) {
+    /*public static Hashtable<String, String> getEnv(String url) {
         Hashtable<String, String> environment = new Hashtable<>();
-        environment.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
+        environment.put(Context.INITIAL_CONTEXT_FACTORY,"com.sun.jndi.ldap.LdapCtxFactory");
         environment.put(Context.PROVIDER_URL, url);
         environment.put(Context.SECURITY_AUTHENTICATION, "simple");
         environment.put(Context.SECURITY_PRINCIPAL, "cn=admin," + BASE_DN);
         environment.put(Context.SECURITY_CREDENTIALS, "password");
         return environment;
-    }
+    }*/
 
     public static  void jsonUserBuilder(NamingEnumeration<SearchResult> answer, JSONArray jArray) throws NamingException, JSONException {
         while (answer.hasMore()) {
