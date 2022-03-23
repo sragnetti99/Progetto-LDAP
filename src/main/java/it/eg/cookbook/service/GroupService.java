@@ -94,8 +94,9 @@ public class GroupService {
         DirContext context = new InitialDirContext(this.getLdapContextEnv(Utility.URL));
         JSONArray jArray = new JSONArray();
 
-        String member = new JSONObject(uniqueMember).get("uniquemember").toString();
-        String filter = "uniquemember=" + member;
+       /* String member = new JSONObject(uniqueMember).get("uniquemember").toString();
+        String filter = "uniquemember=" + member;*/
+        String filter = "uniquemember=" + uniqueMember;
         SearchControls searchControls = new SearchControls();
         searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
         NamingEnumeration<SearchResult> answer = context.search("cn=" + groupId + "," + Utility.GROUP_CONTEXT, filter, searchControls);
@@ -127,7 +128,8 @@ public class GroupService {
     */
 
     // MAP --> cn utente, esiste ? true : false
-    public Map<String, Boolean> getUserMap(String users) throws JSONException, NamingException {
+  /* FUNZIONANTE:
+  public Map<String, Boolean> getUserMap(String users) throws JSONException, NamingException {
         Map<String, Boolean> map = new HashMap<>();
         JSONObject jsonObject = new JSONObject(users);
         JSONArray members = jsonObject.getJSONArray("uniquemember");
@@ -148,5 +150,50 @@ public class GroupService {
             attributes.put(memberAtt);
             context.modifyAttributes("cn=" + groupId + "," + Utility.GROUP_CONTEXT, DirContext.ADD_ATTRIBUTE, attributes);
         }
+    }
+    */
+
+    public String addUsersToGroup(String users, String groupId) throws JSONException, NamingException {
+        DirContext context = new InitialDirContext(this.getLdapContextEnv(Utility.URL));
+        JSONObject jsonObject = new JSONObject(users);
+        JSONArray members = jsonObject.getJSONArray("uniquemember");
+        Attributes attributes = new BasicAttributes();
+
+        JSONArray jArray = new JSONArray();
+
+
+
+
+        for (int i = 0; i < members.length(); i++) {
+
+            JSONObject cnJson = new JSONObject();
+
+
+
+            String currentMember = members.get(i).toString();
+            String cn = currentMember.substring(currentMember.indexOf("=")+1, currentMember.indexOf(","));
+
+            if(this.findUserInGroup(currentMember, groupId).length() > 2){
+                System.out.println("utente già presente");
+                cnJson.put("ciao", "utente già presente");
+
+            } else if(this.peopleService.findUser(cn).length() <= 2){
+                System.out.println("utente non esiste");
+                cnJson.put("ciao", "utente non esiste");
+
+            } else {
+                System.out.println("tutto ok");
+                cnJson.put("ciao", "tutto ok");
+
+                BasicAttribute memberAtt = new BasicAttribute("uniquemember", "cn=" + cn + "," + Utility.USER_CONTEXT);
+                attributes.put(memberAtt);
+                context.modifyAttributes("cn=" + groupId + "," + Utility.GROUP_CONTEXT, DirContext.ADD_ATTRIBUTE, attributes);
+            }
+
+
+
+            jArray.put(cnJson);
+        }
+        return jArray.toString();
     }
 }

@@ -6,7 +6,9 @@ import it.eg.cookbook.model.ResponseCode;
 import it.eg.cookbook.model.ResponseMessage;
 import it.eg.cookbook.service.GroupService;
 import lombok.extern.slf4j.Slf4j;
+import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -40,7 +42,9 @@ public class GroupController implements GroupApi {
 
     @DeleteMapping(path = "/{groupId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseMessage deleteUserFromGroup(@RequestBody String uniqueMember, @PathVariable String groupId) throws JSONException, NamingException {
-        if(this.groupService.findUserInGroup(uniqueMember, groupId).trim().isEmpty()){
+        JSONArray jArray = new JSONArray();
+        String member = new JSONObject(uniqueMember).get("uniquemember").toString();
+        if(this.groupService.findUserInGroup(member, groupId).trim().isEmpty()){
             throw new BusinessException(ResponseCode.USER_NOT_IN_GROUP);
         } else {
             this.groupService.deleteUserFromGroup(uniqueMember, groupId);
@@ -48,8 +52,7 @@ public class GroupController implements GroupApi {
         }
     }
 
-    @PostMapping(path = "/{groupId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseMessage postUser(@RequestBody String uniqueMembers, @PathVariable String groupId) {
+
        /* try {
             if(this.groupService.addUserToGroup(uniqueMembers, groupId)){
                 return new ResponseMessage(true, ResponseCode.OK, "Utente inserito correttamente nel gruppo");
@@ -64,6 +67,7 @@ public class GroupController implements GroupApi {
             throw new BusinessException(ResponseCode.USER_NOT_FOUND);
         } */
 
+        /*
         try {
             Map<String, Boolean> map = this.groupService.getUserMap(uniqueMembers);
             List<String> usersToAdd =  map.entrySet().stream()
@@ -89,6 +93,12 @@ public class GroupController implements GroupApi {
             e.printStackTrace();
             throw new BusinessException(ResponseCode.USER_NOT_FOUND);
         }
+
+         */
+    @PostMapping(path = "/{groupId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+        public ResponseMessage postUser(@RequestBody String uniqueMembers, @PathVariable String groupId) throws JSONException, NamingException {
+        System.out.println(this.groupService.addUsersToGroup(uniqueMembers, groupId));
+        return new ResponseMessage(true, ResponseCode.OK, "");
     }
 }
 

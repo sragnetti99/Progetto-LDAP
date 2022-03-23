@@ -41,6 +41,6 @@ public interface GroupApi {
             @ApiResponse(code = 200, message = "Ok", response = String.class),
             @ApiResponse(code = 409, message = "Impossibile inserire l'utente nel gruppo", response = ResponseMessage.class)
     })
-    ResponseMessage postUser(@RequestBody String uniqueMembers, @PathVariable("id") String groupId);
+    ResponseMessage postUser(@RequestBody String uniqueMembers, @PathVariable("id") String groupId) throws JSONException, NamingException;
 
 }
