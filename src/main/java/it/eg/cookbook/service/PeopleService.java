@@ -1,8 +1,8 @@
 package it.eg.cookbook.service;
 
+import it.eg.cookbook.Utils.PasswordUtil;
 import it.eg.cookbook.model.User;
-import it.eg.cookbook.utilities.Sha512Hasher;
-import it.eg.cookbook.utilities.Utility;
+import it.eg.cookbook.Utils.Utility;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,9 +13,8 @@ import javax.naming.Context;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.*;
-import java.security.SecureRandom;
+import java.nio.charset.StandardCharsets;
 import java.util.Hashtable;
-
 
 @Service
 public class PeopleService {
@@ -33,9 +32,6 @@ public class PeopleService {
         return environment;
     }
 
-    /*private String hashPassword(String plainTextPassword) {
-        return BCrypt.hashpw(plainTextPassword, BCrypt.gensalt());
-    }*/
     public String getAllUsers() throws NamingException, JSONException {
         DirContext adminContext = new InitialDirContext(this.getLdapContextEnv(Utility.BASE_URL));
 
@@ -69,17 +65,10 @@ public class PeopleService {
             Attribute mail = new BasicAttribute("mail", user.getEmail());
             Attribute username = new BasicAttribute("uid", user.getUid());
 
-         //   Attribute password = new BasicAttribute("userPassword", hashPassword(user.getPassword()));
+            String hasedPwd = PasswordUtil.generateSSHA(user.getPassword().getBytes(StandardCharsets.UTF_8));
 
-
-            Sha512Hasher hasher = new Sha512Hasher();
-            byte[] salt = new byte[16];
-            SecureRandom secureRandom = new SecureRandom();
-            secureRandom.nextBytes(salt);
-            Attribute password = new BasicAttribute("userPassword", hasher.hash(user.getPassword(), salt));
-
-
-          //  System.out.println( hasher.hash(user.getPassword(), salt));
+            Attribute password = new BasicAttribute("userPassword", hasedPwd);
+            System.out.println(hasedPwd);
 
             Attributes container = new BasicAttributes();
             container.put(objClasses);

@@ -1,6 +1,6 @@
 package it.eg.cookbook.service;
 
-import it.eg.cookbook.utilities.Utility;
+import it.eg.cookbook.Utils.Utility;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;

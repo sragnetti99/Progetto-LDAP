@@ -1,14 +1,12 @@
-package it.eg.cookbook.utilities;
+package it.eg.cookbook.Utils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import javax.naming.Context;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.SearchResult;
-import java.util.Hashtable;
 
 public class Utility {
 
