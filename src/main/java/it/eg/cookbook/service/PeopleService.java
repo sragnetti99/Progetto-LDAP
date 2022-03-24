@@ -36,14 +36,13 @@ public class PeopleService {
         DirContext adminContext = new InitialDirContext(this.getLdapContextEnv(Utility.BASE_URL));
 
         JSONArray jArray = new JSONArray();
-        if (jArray != null) {
-            String filter = "objectclass=person";
-            SearchControls searchControls = new SearchControls();
-            searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-            NamingEnumeration<SearchResult> answer = adminContext.search("", filter, searchControls);
-            Utility.jsonUserBuilder(answer, jArray);
-            answer.close();
-        }
+        String filter = "objectclass=person";
+        SearchControls searchControls = new SearchControls();
+        searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+        NamingEnumeration<SearchResult> answer = adminContext.search("", filter, searchControls);
+        Utility.jsonUserBuilder(answer, jArray);
+        answer.close();
+
         adminContext.close();
         return jArray.toString();
     }
@@ -52,32 +51,21 @@ public class PeopleService {
 
         try {
             DirContext context = new InitialDirContext(this.getLdapContextEnv(Utility.URL));
-
             Attribute objClasses = new BasicAttribute("objectClass");
             objClasses.add("person");
             objClasses.add("inetOrgPerson");
             objClasses.add("organizationalPerson");
             objClasses.add("top");
 
-            Attribute cn = new BasicAttribute("cn", user.getCn());
-            Attribute givenname = new BasicAttribute("givenName", user.getGivenName());
-            Attribute sn = new BasicAttribute("sn", user.getSn());
-            Attribute mail = new BasicAttribute("mail", user.getEmail());
-            Attribute username = new BasicAttribute("uid", user.getUid());
-
-            String hasedPwd = PasswordUtil.generateSSHA(user.getPassword().getBytes(StandardCharsets.UTF_8));
-
-            Attribute password = new BasicAttribute("userPassword", hasedPwd);
-            System.out.println(hasedPwd);
-
             Attributes container = new BasicAttributes();
             container.put(objClasses);
-            container.put(cn);
-            container.put(givenname);
-            container.put(sn);
-            container.put(mail);
-            container.put(password);
-            container.put(username);
+            container.put(new BasicAttribute("cn", user.getCn()));
+            container.put( new BasicAttribute("givenName", user.getGivenName()));
+            container.put(new BasicAttribute("sn", user.getSn()));
+            container.put(new BasicAttribute("mail", user.getEmail()));
+            String hasedPwd = PasswordUtil.generateSSHA(user.getPassword().getBytes(StandardCharsets.UTF_8));
+            container.put(new BasicAttribute("userPassword", hasedPwd));
+            container.put(new BasicAttribute("uid", user.getUid()));
 
             String userDN = "cn=" + user.getCn() + "," + Utility.USER_CONTEXT;
             context.createSubcontext(userDN, container);
@@ -109,14 +97,13 @@ public class PeopleService {
         DirContext context = new InitialDirContext(this.getLdapContextEnv(Utility.BASE_URL));
         JSONArray jArray = new JSONArray();
 
-        if (jArray != null) {
-            String filter = "(&(objectclass=person)(cn="+ cn + "))";
-            SearchControls ctrl = new SearchControls();
-            ctrl.setSearchScope(SearchControls.SUBTREE_SCOPE);
-            NamingEnumeration<SearchResult> answer = context.search("", filter, ctrl);
-            Utility.jsonUserBuilder(answer, jArray);
-            answer.close();
-        }
+        String filter = "(&(objectclass=person)(cn="+ cn + "))";
+        SearchControls ctrl = new SearchControls();
+        ctrl.setSearchScope(SearchControls.SUBTREE_SCOPE);
+        NamingEnumeration<SearchResult> answer = context.search("", filter, ctrl);
+        Utility.jsonUserBuilder(answer, jArray);
+        answer.close();
+
         return jArray.toString();
     }
 

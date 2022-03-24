@@ -1,6 +1,7 @@
 package it.eg.cookbook.service;
 
 import it.eg.cookbook.Utils.Utility;
+import it.eg.cookbook.model.UserStatus;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -12,10 +13,9 @@ import javax.naming.Context;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.*;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class GroupService {
@@ -47,15 +47,15 @@ public class GroupService {
         NamingEnumeration<SearchResult> answer = context.search(groupDN, filter, ctrl);
 
         String dn;
-        SearchResult result = (SearchResult) answer.next();
+        SearchResult result = answer.next();
         Attributes a = result.getAttributes();
         dn = result.getNameInNamespace();
 
         for (int i = 0; i < a.get("uniqueMember").size(); i++) {
             JSONObject cnJson = new JSONObject();
             String member = a.get("uniqueMember").get(i).toString();
-            cnJson.put("user", member.substring(member.indexOf("=")+1, member.indexOf(",")));
-            cnJson.put("location", dn.substring(dn.indexOf("=")+1, dn.indexOf(",")));
+            cnJson.put("user", member.substring(member.indexOf("=") + 1, member.indexOf(",")));
+            cnJson.put("location", dn.substring(dn.indexOf("=") + 1, dn.indexOf(",")));
             jArray.put(cnJson);
         }
         answer.close();
@@ -70,7 +70,6 @@ public class GroupService {
         SearchControls ctrl = new SearchControls();
         ctrl.setSearchScope(SearchControls.SUBTREE_SCOPE);
         NamingEnumeration<SearchResult> answer = context.search(Utility.GROUP_CONTEXT, filter, ctrl);
-
         while (answer.hasMore()) {
             JSONObject cnJson = new JSONObject();
             String cn = answer.next().getAttributes().get("cn").get().toString();
@@ -94,8 +93,6 @@ public class GroupService {
         DirContext context = new InitialDirContext(this.getLdapContextEnv(Utility.URL));
         JSONArray jArray = new JSONArray();
 
-       /* String member = new JSONObject(uniqueMember).get("uniquemember").toString();
-        String filter = "uniquemember=" + member;*/
         String filter = "uniquemember=" + uniqueMember;
         SearchControls searchControls = new SearchControls();
         searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
@@ -106,94 +103,32 @@ public class GroupService {
         return jArray.toString();
     }
 
-   /* public boolean addUserToGroup(String uniqueMembers, String groupId) throws NamingException, JSONException {
-        DirContext context = new InitialDirContext(Utility.getEnv(Utility.URL));
-        Attributes attributes = new BasicAttributes();
-        JSONObject jsonObject = new JSONObject(uniqueMembers);
-        JSONArray members = jsonObject.getJSONArray("uniquemember");
-        boolean isUserAdded = true;
-        for (int i = 0; i < members.length(); i++) {
-            String cn = members.getString(i).substring(members.getString(i).indexOf("=")+1, members.getString(i).indexOf(","));
-            if (this.peopleService.findUser(cn).length()<=2) {
-                isUserAdded = false;
-            } else {
-                String currentMember = members.getString(i);
-                BasicAttribute memberAtt = new BasicAttribute("uniqueMember", currentMember);
-                attributes.put(memberAtt);
-                context.modifyAttributes("cn=" + groupId + "," + Utility.GROUP_CONTEXT, DirContext.ADD_ATTRIBUTE, attributes);
-            }
-        }
-        return isUserAdded;
-    }
-    */
-
-    // MAP --> cn utente, esiste ? true : false
-  /* FUNZIONANTE:
-  public Map<String, Boolean> getUserMap(String users) throws JSONException, NamingException {
-        Map<String, Boolean> map = new HashMap<>();
-        JSONObject jsonObject = new JSONObject(users);
-        JSONArray members = jsonObject.getJSONArray("uniquemember");
-        for (int i = 0; i < members.length(); i++) {
-            String cn = members.getString(i).substring(members.getString(i).indexOf("=") + 1, members.getString(i).indexOf(","));
-            map.put(cn, this.peopleService.findUser(cn).length() > 2);
-        }
-        return map;
-    }
-
-    public void addUsersToGroup(List<String> usersToAdd, String groupId) throws NamingException {
-        DirContext context = new InitialDirContext(this.getLdapContextEnv(Utility.URL));
-        Attributes attributes = new BasicAttributes();
-        for (int i = 0; i < usersToAdd.size(); i++) {
-            String currentMember = usersToAdd.get(i);
-            System.out.println(currentMember);
-            BasicAttribute memberAtt = new BasicAttribute("uniquemember", "cn=" + currentMember + "," + Utility.USER_CONTEXT);
-            attributes.put(memberAtt);
-            context.modifyAttributes("cn=" + groupId + "," + Utility.GROUP_CONTEXT, DirContext.ADD_ATTRIBUTE, attributes);
-        }
-    }
-    */
-
-    public String addUsersToGroup(String users, String groupId) throws JSONException, NamingException {
+    public List<UserStatus> addUsersToGroup(String users, String groupId) throws JSONException, NamingException {
         DirContext context = new InitialDirContext(this.getLdapContextEnv(Utility.URL));
         JSONObject jsonObject = new JSONObject(users);
         JSONArray members = jsonObject.getJSONArray("uniquemember");
         Attributes attributes = new BasicAttributes();
-
-        JSONArray jArray = new JSONArray();
-
-
-
-
+        List<UserStatus> result = new ArrayList<>();
         for (int i = 0; i < members.length(); i++) {
-
-            JSONObject cnJson = new JSONObject();
-
-
+            UserStatus us = new UserStatus();
 
             String currentMember = members.get(i).toString();
-            String cn = currentMember.substring(currentMember.indexOf("=")+1, currentMember.indexOf(","));
+            String cn = currentMember.substring(currentMember.indexOf("=") + 1, currentMember.indexOf(","));
+            us.setCn(cn);
 
-            if(this.findUserInGroup(currentMember, groupId).length() > 2){
-                System.out.println("utente già presente");
-                cnJson.put("ciao", "utente già presente");
-
-            } else if(this.peopleService.findUser(cn).length() <= 2){
-                System.out.println("utente non esiste");
-                cnJson.put("ciao", "utente non esiste");
-
+            if (this.findUserInGroup(currentMember, groupId).length() > 2) {
+                us.setStatus("Utente già presente");
+            } else if (this.peopleService.findUser(cn).length() <= 2) {
+                us.setStatus("Utente non esistente");
             } else {
-                System.out.println("tutto ok");
-                cnJson.put("ciao", "tutto ok");
-
+                us.setStatus("Utente esistente");
                 BasicAttribute memberAtt = new BasicAttribute("uniquemember", "cn=" + cn + "," + Utility.USER_CONTEXT);
                 attributes.put(memberAtt);
                 context.modifyAttributes("cn=" + groupId + "," + Utility.GROUP_CONTEXT, DirContext.ADD_ATTRIBUTE, attributes);
             }
-
-
-
-            jArray.put(cnJson);
+            result.add(us);
         }
-        return jArray.toString();
+        return result;
     }
+
 }
