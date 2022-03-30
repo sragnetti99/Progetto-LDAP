@@ -23,49 +23,41 @@ public class Utility {
             Attributes a = result.getAttributes();
             JSONObject cnJson = new JSONObject();
 
-            if (a.get("mail") != null) {
-                cnJson.put("mail", a.get("mail").get());
-            }
-            if (a.get("userpassword") != null) {
-                cnJson.put("userpassword", a.get("userpassword").get());
-            }
-            if (a.get("uid") != null) {
-                cnJson.put("uid", a.get("uid").get());
-            }
-            if (a.get("objectclass") != null) {
-                cnJson.put("objectclass", a.get("objectclass").get());
-            }
-            if (a.get("givenname") != null) {
-                cnJson.put("givenname", a.get("givenname").get());
-            }
-            if (a.get("sambaLMPassword") != null) {
-                cnJson.put("sambaLMPassword", a.get("sambaLMPassword").get());
-            }
-            if (a.get("sambaNTPassword") != null) {
-                cnJson.put("sambaNTPassword", a.get("sambaNTPassword").get());
-            }
-            if (a.get("sambaSID") != null) {
-                cnJson.put("sambaSID", a.get("sambaSID").get());
-            }
-            if (a.get("homeDirectory") != null) {
-                cnJson.put("homeDirectory", a.get("homeDirectory").get());
-            }
-            if (a.get("loginShell") != null) {
-                cnJson.put("loginShell", a.get("loginShell").get());
-            }
-            if (a.get("loginShell") != null) {
-                cnJson.put("loginShell", a.get("loginShell").get());
-            }
+            checkIfNullThanReturnEmpty(a,"mail",cnJson);
 
-            if (a.get("uidNumber") != null) {
-                cnJson.put("uidNumber", a.get("uidNumber").get());
-            }
+            checkIfNullThanReturnEmpty(a,"userPassword",cnJson);
+
+            checkIfNullThanReturnEmpty(a,"uid",cnJson);
+
+            checkIfNullThanReturnEmpty(a,"objectclass",cnJson);
+
+            checkIfNullThanReturnEmpty(a,"givenName",cnJson);
+
+            checkIfNullThanReturnEmpty(a,"sambaLMPassword",cnJson);
+
+            checkIfNullThanReturnEmpty(a,"sambaNTPassword",cnJson);
+
+            checkIfNullThanReturnEmpty(a,"sambaSID",cnJson);
+
+            checkIfNullThanReturnEmpty(a,"homeDirectory",cnJson);
+
+            checkIfNullThanReturnEmpty(a,"loginShell",cnJson);
+
+            checkIfNullThanReturnEmpty(a,"uidNumber",cnJson);
 
 
             jArray.put(cnJson);
         }
 
 
+    }
+
+    private static void checkIfNullThanReturnEmpty(Attributes a, String key, JSONObject cnJson) throws JSONException, NamingException {
+        if (a.get(key) != null) {
+            cnJson.put(key, a.get(key).get());
+        }else{
+            cnJson.put(key,"");
+        }
     }
 
 }

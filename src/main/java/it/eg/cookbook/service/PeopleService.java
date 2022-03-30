@@ -52,7 +52,7 @@ public class PeopleService {
     public boolean save(User user) {
 
         try {
-            getMaxUidNumber();
+
             DirContext context = new InitialDirContext(this.getLdapContextEnv(Utility.URL));
             Attribute objClasses = new BasicAttribute("objectClass");
             objClasses.add("person");
@@ -74,7 +74,8 @@ public class PeopleService {
             container.put(new BasicAttribute("sambaNTPassword", hashedPwd));
             container.put(new BasicAttribute("sambaSID", "S-1-5-21-1288326302-1102467403-3443272390-3000"));
             container.put(new BasicAttribute("homeDirectory", "/home/users/"+user.getCn()));
-            container.put(new BasicAttribute("homeDirectory", "/bin/bash"));
+            container.put(new BasicAttribute("loginShell", "/bin/bash"));
+            container.put(new BasicAttribute("uidNumber",getMaxUidNumber()));
             String userDN = "cn=" + user.getCn() + "," + Utility.USER_CONTEXT;
             context.createSubcontext(userDN, container);
             return true;
@@ -92,25 +93,24 @@ public class PeopleService {
     public void putUser(User user) throws NamingException, NoSuchAlgorithmException, JSONException {
         DirContext context = new InitialDirContext(this.getLdapContextEnv(Utility.URL));
 
-        ModificationItem[] mods = new ModificationItem[12];
+        ModificationItem[] mods = new ModificationItem[10];
         mods[0] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("givenName", user.getGivenName()));
         mods[1] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("sn", user.getSn()));
         mods[2] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("mail", user.getEmail()));
-        mods[3] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("userPassword", user.getPassword()));
-        mods[4] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("uid", user.getUid()));
+        mods[3] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("uid", user.getUid()));
         if(user.getUidNumber() == null || user.getUidNumber().isEmpty() ){
-            mods[5] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("uidNumber", getMaxUidNumber()));
+            mods[4] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("uidNumber", getMaxUidNumber()));
         }else{
-            mods[5] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("uidNumber", user.getUidNumber()));
+            mods[4] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("uidNumber", user.getUidNumber()));
         }
 
         String hashedPwd = PasswordUtil.generateSSHA(user.getPassword().getBytes(StandardCharsets.UTF_8));
-        mods[6] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("userPassword", hashedPwd));
-        mods[7] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("sambaLMPassword", hashedPwd));
-        mods[8] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("sambaNTPassword", hashedPwd));
-        mods[9] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("sambaSID", "S-1-5-21-1288326302-1102467403-3443272390-3000"));
-        mods[10] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("homeDirectory", "/home/users/"+user.getCn()));
-        mods[11] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE,new BasicAttribute("shellLogin", "/bin/bash"));
+        mods[5] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("userPassword", hashedPwd));
+        mods[6] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("sambaLMPassword", hashedPwd));
+        mods[7] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("sambaNTPassword", hashedPwd));
+        mods[8] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("sambaSID", "S-1-5-21-1288326302-1102467403-3443272390-3000"));
+        mods[9] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("homeDirectory", "/home/users/"+user.getCn()));
+        mods[10] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE,new BasicAttribute("shellLogin", "/bin/bash"));
 
         context.modifyAttributes("cn=" + user.getCn() + "," + Utility.USER_CONTEXT, mods);
     }

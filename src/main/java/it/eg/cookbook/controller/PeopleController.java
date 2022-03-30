@@ -59,7 +59,7 @@ public class PeopleController implements PeopleApi {
         try {
             this.peopleService.putUser(user);
             return new ResponseMessage(true, ResponseCode.OK, "Utente aggiornato correttamente");
-        } catch (NamingException | NoSuchAlgorithmException e) {
+        } catch (NamingException | NoSuchAlgorithmException | JSONException e) {
             e.printStackTrace();
             throw new BusinessException(ResponseCode.USER_NOT_FOUND);
         }
