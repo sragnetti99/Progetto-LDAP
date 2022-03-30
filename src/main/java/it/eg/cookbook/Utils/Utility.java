@@ -6,12 +6,13 @@ import org.json.JSONObject;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attributes;
+import javax.naming.directory.BasicAttribute;
 import javax.naming.directory.SearchResult;
 
 public class Utility {
 
     public static final String BASE_DN = "dc=imolinfo,dc=it";
-    public static final String URL = "ldap://localhost:389/";
+    public static final String URL = "ldap://192.168.3.168:389/";
     public static final String BASE_URL = URL + BASE_DN;
     public static final String USER_CONTEXT = "ou=people,dc=imolinfo,dc=it";
     public static final String GROUP_CONTEXT = "ou=groups,dc=imolinfo,dc=it";
@@ -37,14 +38,34 @@ public class Utility {
             if (a.get("givenname") != null) {
                 cnJson.put("givenname", a.get("givenname").get());
             }
-            if (a.get("sn") != null) {
-                cnJson.put("mail", a.get("sn").get());
+            if (a.get("sambaLMPassword") != null) {
+                cnJson.put("sambaLMPassword", a.get("sambaLMPassword").get());
             }
-            if (a.get("cn") != null) {
-                cnJson.put("cn", a.get("cn").get());
+            if (a.get("sambaNTPassword") != null) {
+                cnJson.put("sambaNTPassword", a.get("sambaNTPassword").get());
             }
+            if (a.get("sambaSID") != null) {
+                cnJson.put("sambaSID", a.get("sambaSID").get());
+            }
+            if (a.get("homeDirectory") != null) {
+                cnJson.put("homeDirectory", a.get("homeDirectory").get());
+            }
+            if (a.get("loginShell") != null) {
+                cnJson.put("loginShell", a.get("loginShell").get());
+            }
+            if (a.get("loginShell") != null) {
+                cnJson.put("loginShell", a.get("loginShell").get());
+            }
+
+            if (a.get("uidNumber") != null) {
+                cnJson.put("uidNumber", a.get("uidNumber").get());
+            }
+
+
             jArray.put(cnJson);
         }
+
+
     }
 
 }

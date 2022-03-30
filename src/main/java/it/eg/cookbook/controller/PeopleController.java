@@ -13,6 +13,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import javax.naming.NamingException;
+import java.security.NoSuchAlgorithmException;
 
 @RestController
 @RequestMapping("/api/v1/people")
@@ -54,11 +55,11 @@ public class PeopleController implements PeopleApi {
     }
 
     @PutMapping(path = "/",  consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseMessage putUser(@RequestBody User user) {
+    public ResponseMessage putUser(@RequestBody User user)  {
         try {
             this.peopleService.putUser(user);
             return new ResponseMessage(true, ResponseCode.OK, "Utente aggiornato correttamente");
-        } catch (NamingException e) {
+        } catch (NamingException | NoSuchAlgorithmException e) {
             e.printStackTrace();
             throw new BusinessException(ResponseCode.USER_NOT_FOUND);
         }
