@@ -3,6 +3,7 @@ package it.eg.cookbook.service;
 import it.eg.cookbook.Utils.PasswordUtil;
 import it.eg.cookbook.model.User;
 import it.eg.cookbook.Utils.Utility;
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -19,10 +20,13 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Hashtable;
 
 @Service
+@Slf4j
 public class PeopleService {
 
     @Autowired
     private Environment env;
+
+
 
     private Hashtable<String, String> getLdapContextEnv(String url) {
         Hashtable<String, String> environment = new Hashtable<>();
@@ -34,18 +38,17 @@ public class PeopleService {
         return environment;
     }
 
-    public String getAllUsers() throws NamingException, JSONException {
-        DirContext adminContext = new InitialDirContext(this.getLdapContextEnv(Utility.BASE_URL));
-
-        JSONArray jArray = new JSONArray();
+    public String getAllUsers() throws NamingException, JSONException {;
         String filter = "objectclass=person";
+        DirContext ldapContext = new InitialDirContext(this.getLdapContextEnv(Utility.BASE_URL));
         SearchControls searchControls = new SearchControls();
         searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-        NamingEnumeration<SearchResult> answer = adminContext.search("", filter, searchControls);
+        NamingEnumeration<SearchResult> answer = ldapContext.search("", filter, searchControls);
+        JSONArray jArray = new JSONArray();
         Utility.jsonUserBuilder(answer, jArray);
         answer.close();
 
-        adminContext.close();
+        ldapContext.close();
         return jArray.toString();
     }
 
@@ -53,7 +56,7 @@ public class PeopleService {
 
         try {
 
-            DirContext context = new InitialDirContext(this.getLdapContextEnv(Utility.URL));
+            DirContext ldapContext = new InitialDirContext(this.getLdapContextEnv(Utility.URL));
             Attribute objClasses = new BasicAttribute("objectClass");
             objClasses.add("person");
             objClasses.add("inetOrgPerson");
@@ -77,52 +80,69 @@ public class PeopleService {
             container.put(new BasicAttribute("loginShell", "/bin/bash"));
             container.put(new BasicAttribute("uidNumber",getMaxUidNumber()));
             String userDN = "cn=" + user.getCn() + "," + Utility.USER_CONTEXT;
-            context.createSubcontext(userDN, container);
+            log.debug(container.toString());
+            ldapContext.createSubcontext(userDN, container);
             return true;
         } catch (Exception e) {
             e.printStackTrace();
+            log.debug(e.getMessage());
             return false;
         }
     }
 
     public void deleteUser(String cn) throws NamingException {
-        DirContext context = new InitialDirContext(this.getLdapContextEnv(Utility.URL.substring(0, Utility.URL.length())));
+        DirContext context = new InitialDirContext(this.getLdapContextEnv(Utility.URL));
         context.destroySubcontext("cn="+cn+","+ Utility.USER_CONTEXT);
     }
 
     public void putUser(User user) throws NamingException, NoSuchAlgorithmException, JSONException {
-        DirContext context = new InitialDirContext(this.getLdapContextEnv(Utility.URL));
+        DirContext ldapContext = new InitialDirContext(this.getLdapContextEnv(Utility.URL));
 
         ModificationItem[] mods = new ModificationItem[10];
-        mods[0] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("givenName", user.getGivenName()));
-        mods[1] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("sn", user.getSn()));
-        mods[2] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("mail", user.getEmail()));
-        mods[3] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("uid", user.getUid()));
+
+        mods[0] = putNewModificationAttribute("givenName",user.getGivenName());
+
+        mods[1] = putNewModificationAttribute("sn",user.getSn());
+
+        mods[2] = putNewModificationAttribute("mail",user.getEmail());
+
+        mods[3] = putNewModificationAttribute("Uid",user.getUid());
+
         if(user.getUidNumber() == null || user.getUidNumber().isEmpty() ){
-            mods[4] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("uidNumber", getMaxUidNumber()));
+            mods[4] = putNewModificationAttribute("uidNumber","");
         }else{
-            mods[4] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("uidNumber", user.getUidNumber()));
+            mods[4] = putNewModificationAttribute("uidNumber",user.getUidNumber());
         }
 
         String hashedPwd = PasswordUtil.generateSSHA(user.getPassword().getBytes(StandardCharsets.UTF_8));
-        mods[5] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("userPassword", hashedPwd));
-        mods[6] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("sambaLMPassword", hashedPwd));
-        mods[7] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("sambaNTPassword", hashedPwd));
-        mods[8] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("sambaSID", "S-1-5-21-1288326302-1102467403-3443272390-3000"));
-        mods[9] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("homeDirectory", "/home/users/"+user.getCn()));
-        mods[10] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE,new BasicAttribute("shellLogin", "/bin/bash"));
 
-        context.modifyAttributes("cn=" + user.getCn() + "," + Utility.USER_CONTEXT, mods);
+        mods[5] = mods[4] = putNewModificationAttribute("userPassword",hashedPwd);
+
+        mods[6] = mods[4] = putNewModificationAttribute("sambaLMPassword",hashedPwd);
+
+        mods[7] = putNewModificationAttribute("sambaNTPassword",hashedPwd);
+
+        mods[8] = putNewModificationAttribute("sambaSID", "S-1-5-21-1288326302-1102467403-3443272390-3000");
+
+        mods[9] = putNewModificationAttribute("homeDirectory","/home/users/"+user.getCn());
+
+        mods[10] = putNewModificationAttribute("shellLogin","/bin/bash");
+
+        ldapContext.modifyAttributes("cn=" + user.getCn() + "," + Utility.USER_CONTEXT, mods);
+    }
+
+    private ModificationItem putNewModificationAttribute(String key, Object value) {
+        return new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute(key, value));
     }
 
     public String findUser(String cn) throws NamingException, JSONException {
-        DirContext context = new InitialDirContext(this.getLdapContextEnv(Utility.BASE_URL));
+        DirContext ldapContext = new InitialDirContext(this.getLdapContextEnv(Utility.BASE_URL));
         JSONArray jArray = new JSONArray();
 
         String filter = "(&(objectclass=person)(cn="+ cn + "))";
         SearchControls ctrl = new SearchControls();
         ctrl.setSearchScope(SearchControls.SUBTREE_SCOPE);
-        NamingEnumeration<SearchResult> answer = context.search("", filter, ctrl);
+        NamingEnumeration<SearchResult> answer = ldapContext.search("", filter, ctrl);
         Utility.jsonUserBuilder(answer, jArray);
         answer.close();
 
@@ -130,20 +150,20 @@ public class PeopleService {
     }
 
     private Integer getMaxUidNumber() throws JSONException, NamingException {
-        Integer maxUid = new Integer(0);
-        DirContext adminContext = new InitialDirContext(this.getLdapContextEnv(Utility.BASE_URL));
+        Integer maxUid = new Integer(1000);
+        DirContext ldapContext = new InitialDirContext(this.getLdapContextEnv(Utility.BASE_URL));
 
         JSONArray jArray = new JSONArray();
         String filter = "uidNumber=*";
         SearchControls searchControls = new SearchControls();
         searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-        NamingEnumeration<SearchResult> answer = adminContext.search("",filter,searchControls);
+        NamingEnumeration<SearchResult> answer = ldapContext.search("",filter,searchControls);
         Utility.jsonUserBuilder(answer, jArray);
 
         for(int i =0; i<jArray.length();i++){
             JSONObject jsonObject = jArray.getJSONObject(i);
             if (jsonObject.get("uidNumber") != null){
-                Integer integerJson = Integer.parseInt(jsonObject.get("uidNumber").toString());
+                int integerJson = Integer.parseInt(jsonObject.get("uidNumber").toString());
                 if( integerJson > maxUid){
                     maxUid = integerJson;
                 }
@@ -152,7 +172,7 @@ public class PeopleService {
         }
         answer.close();
 
-        adminContext.close();
+        ldapContext.close();
 
         return maxUid;
     }
