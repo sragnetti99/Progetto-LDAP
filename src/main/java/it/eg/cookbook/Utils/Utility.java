@@ -45,6 +45,8 @@ public class Utility {
 
             checkIfNullThanReturnEmpty(a,"uidNumber",cnJson);
 
+            checkIfNullThanReturnEmpty(a,"sambaAcctFlags",cnJson);
+
 
             jArray.put(cnJson);
         }

@@ -78,7 +78,9 @@ public class PeopleService {
             container.put(new BasicAttribute("sambaSID", "S-1-5-21-1288326302-1102467403-3443272390-3000"));
             container.put(new BasicAttribute("homeDirectory", "/home/users/"+user.getCn()));
             container.put(new BasicAttribute("loginShell", "/bin/bash"));
-            container.put(new BasicAttribute("uidNumber",getMaxUidNumber()));
+            container.put(new BasicAttribute("uidNumber",getMaxUidNumber()+1));
+            container.put(new BasicAttribute("gidNumber","500"));
+            container.put(new BasicAttribute("sambaAcctFlags","[U]"));
             String userDN = "cn=" + user.getCn() + "," + Utility.USER_CONTEXT;
             log.debug(container.toString());
             ldapContext.createSubcontext(userDN, container);
@@ -98,35 +100,47 @@ public class PeopleService {
     public void putUser(User user) throws NamingException, NoSuchAlgorithmException, JSONException {
         DirContext ldapContext = new InitialDirContext(this.getLdapContextEnv(Utility.URL));
 
-        ModificationItem[] mods = new ModificationItem[10];
+        ModificationItem[] mods = new ModificationItem[13];
 
-        mods[0] = putNewModificationAttribute("givenName",user.getGivenName());
 
-        mods[1] = putNewModificationAttribute("sn",user.getSn());
+        Attribute objClasses = new BasicAttribute("objectClass","inetOrgPerson");
+        objClasses.add("top");
+        objClasses.add("sambaSamAccount");
+        objClasses.add("posixAccount");
+
+
+
+        mods[0] = putNewModificationAttribute("sn",user.getSn());
+
+        mods[1] = putNewModificationAttribute("givenName",user.getGivenName());
+
+
 
         mods[2] = putNewModificationAttribute("mail",user.getEmail());
 
         mods[3] = putNewModificationAttribute("Uid",user.getUid());
 
         if(user.getUidNumber() == null || user.getUidNumber().isEmpty() ){
-            mods[4] = putNewModificationAttribute("uidNumber","");
+            mods[4] = putNewModificationAttribute("uidNumber",String.valueOf(getMaxUidNumber()+1));
         }else{
             mods[4] = putNewModificationAttribute("uidNumber",user.getUidNumber());
         }
 
-        String hashedPwd = PasswordUtil.generateSSHA(user.getPassword().getBytes(StandardCharsets.UTF_8));
 
-        mods[5] = mods[4] = putNewModificationAttribute("userPassword",hashedPwd);
+        String hashedPwdSambaNt = PasswordUtil.generateSSHA(user.getSambaNTPassword().getBytes(StandardCharsets.UTF_8));
+        String hashedPwdSambaLm = PasswordUtil.generateSSHA(user.getSambaLMPassword().getBytes(StandardCharsets.UTF_8));
+        mods[5] = putNewModificationAttribute("sambaLMPassword",hashedPwdSambaLm);
 
-        mods[6] = mods[4] = putNewModificationAttribute("sambaLMPassword",hashedPwd);
+        mods[6] = putNewModificationAttribute("sambaNTPassword",hashedPwdSambaNt);
 
-        mods[7] = putNewModificationAttribute("sambaNTPassword",hashedPwd);
+        mods[7] = putNewModificationAttribute("sambaSID", "S-1-5-21-1288326302-1102467403-3443272390-3000");
 
-        mods[8] = putNewModificationAttribute("sambaSID", "S-1-5-21-1288326302-1102467403-3443272390-3000");
+        mods[8] = putNewModificationAttribute("homeDirectory","/home/users/"+user.getCn());
 
-        mods[9] = putNewModificationAttribute("homeDirectory","/home/users/"+user.getCn());
-
-        mods[10] = putNewModificationAttribute("shellLogin","/bin/bash");
+        mods[9] = putNewModificationAttribute("loginShell","/bin/bash");
+        mods[10] = putNewModificationAttribute("sambaAcctFlags","[U]");
+        mods[11] = putNewModificationAttribute("gidNumber","500");
+        mods[12] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, objClasses);
 
         ldapContext.modifyAttributes("cn=" + user.getCn() + "," + Utility.USER_CONTEXT, mods);
     }
