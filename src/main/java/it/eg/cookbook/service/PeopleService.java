@@ -71,6 +71,7 @@ public class PeopleService {
             container.put( new BasicAttribute("givenName", user.getGivenName()));
             container.put(new BasicAttribute("sn", user.getSn()));
             container.put(new BasicAttribute("mail", user.getEmail()));
+            container.put(new BasicAttribute("uid", user.getCn()));
             String hashedPwd = PasswordUtil.generateSSHA(user.getPassword().getBytes(StandardCharsets.UTF_8));
             container.put(new BasicAttribute("userPassword", hashedPwd));
             container.put(new BasicAttribute("sambaLMPassword", hashedPwd));
@@ -78,7 +79,7 @@ public class PeopleService {
             container.put(new BasicAttribute("sambaSID", "S-1-5-21-1288326302-1102467403-3443272390-3000"));
             container.put(new BasicAttribute("homeDirectory", "/home/users/"+user.getCn()));
             container.put(new BasicAttribute("loginShell", "/bin/bash"));
-            container.put(new BasicAttribute("uidNumber",getMaxUidNumber()+1));
+            container.put(new BasicAttribute("uidNumber",String.valueOf(getMaxUidNumber()+1)));
             container.put(new BasicAttribute("gidNumber","500"));
             container.put(new BasicAttribute("sambaAcctFlags","[U]"));
             String userDN = "cn=" + user.getCn() + "," + Utility.USER_CONTEXT;
@@ -113,8 +114,6 @@ public class PeopleService {
         mods[0] = putNewModificationAttribute("sn",user.getSn());
 
         mods[1] = putNewModificationAttribute("givenName",user.getGivenName());
-
-
 
         mods[2] = putNewModificationAttribute("mail",user.getEmail());
 
