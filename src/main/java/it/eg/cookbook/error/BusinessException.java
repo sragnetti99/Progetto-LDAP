@@ -13,7 +13,6 @@ public class BusinessException extends RuntimeException {
         this.responseCode = businessErrorCode;
     }
 
-
     public BusinessException(Throwable cause) {
         this(cause, ResponseCode.GENERIC);
     }

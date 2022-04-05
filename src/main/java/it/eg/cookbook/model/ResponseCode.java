@@ -9,7 +9,7 @@ public enum ResponseCode {
     USER_NOT_FOUND("Utente non trovato"),
     USER_EXISTS("Utente già presente"),
     USER_NOT_IN_GROUP("L'utente non è presente all'interno del gruppo"),
-    BAD_FORMAT("Il valore inserito non è nel formato corretto"),
+    BAD_FORMAT("Il body inserito non è nel formato corretto"),
     GENERIC("Errore generico");
 
     private String message;
