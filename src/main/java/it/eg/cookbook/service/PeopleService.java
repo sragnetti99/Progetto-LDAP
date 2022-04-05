@@ -74,8 +74,14 @@ public class PeopleService {
             container.put(new BasicAttribute("uid", user.getCn()));
             String hashedPwd = PasswordUtil.generateSSHA(user.getPassword().getBytes(StandardCharsets.UTF_8));
             container.put(new BasicAttribute("userPassword", hashedPwd));
-            container.put(new BasicAttribute("sambaLMPassword", hashedPwd));
-            container.put(new BasicAttribute("sambaNTPassword", hashedPwd));
+
+            String lmPassword = PasswordUtil.hashLMPassword(user.getSambaLMPassword());
+            System.out.println(lmPassword);
+            container.put(new BasicAttribute("sambaLMPassword", lmPassword));
+
+            String ntPassword = PasswordUtil.hashNTPassword(user.getSambaNTPassword());
+            container.put(new BasicAttribute("sambaNTPassword", ntPassword));
+
             container.put(new BasicAttribute("sambaSID", "S-1-5-21-1288326302-1102467403-3443272390-3000"));
             container.put(new BasicAttribute("homeDirectory", "/home/users/"+user.getCn()));
             container.put(new BasicAttribute("loginShell", "/bin/bash"));
@@ -103,20 +109,14 @@ public class PeopleService {
 
         ModificationItem[] mods = new ModificationItem[13];
 
-
         Attribute objClasses = new BasicAttribute("objectClass","inetOrgPerson");
         objClasses.add("top");
         objClasses.add("sambaSamAccount");
         objClasses.add("posixAccount");
 
-
-
         mods[0] = putNewModificationAttribute("sn",user.getSn());
-
         mods[1] = putNewModificationAttribute("givenName",user.getGivenName());
-
         mods[2] = putNewModificationAttribute("mail",user.getEmail());
-
         mods[3] = putNewModificationAttribute("Uid",user.getUid());
 
         if(user.getUidNumber() == null || user.getUidNumber().isEmpty() ){
@@ -125,17 +125,12 @@ public class PeopleService {
             mods[4] = putNewModificationAttribute("uidNumber",user.getUidNumber());
         }
 
-
         String hashedPwdSambaNt = PasswordUtil.generateSSHA(user.getSambaNTPassword().getBytes(StandardCharsets.UTF_8));
         String hashedPwdSambaLm = PasswordUtil.generateSSHA(user.getSambaLMPassword().getBytes(StandardCharsets.UTF_8));
         mods[5] = putNewModificationAttribute("sambaLMPassword",hashedPwdSambaLm);
-
         mods[6] = putNewModificationAttribute("sambaNTPassword",hashedPwdSambaNt);
-
         mods[7] = putNewModificationAttribute("sambaSID", "S-1-5-21-1288326302-1102467403-3443272390-3000");
-
         mods[8] = putNewModificationAttribute("homeDirectory","/home/users/"+user.getCn());
-
         mods[9] = putNewModificationAttribute("loginShell","/bin/bash");
         mods[10] = putNewModificationAttribute("sambaAcctFlags","[U]");
         mods[11] = putNewModificationAttribute("gidNumber","500");
@@ -163,7 +158,7 @@ public class PeopleService {
     }
 
     private Integer getMaxUidNumber() throws JSONException, NamingException {
-        Integer maxUid = new Integer(1000);
+        Integer maxUid = Integer.valueOf(1000);
         DirContext ldapContext = new InitialDirContext(this.getLdapContextEnv(Utility.BASE_URL));
 
         JSONArray jArray = new JSONArray();
@@ -184,9 +179,7 @@ public class PeopleService {
             }
         }
         answer.close();
-
         ldapContext.close();
-
         return maxUid;
     }
 

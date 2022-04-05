@@ -6,18 +6,17 @@ import org.json.JSONObject;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attributes;
-import javax.naming.directory.BasicAttribute;
 import javax.naming.directory.SearchResult;
 
 public class Utility {
 
     public static final String BASE_DN = "dc=imolinfo,dc=it";
-    public static final String URL = "ldap://192.168.3.168:389/";
+    public static final String URL = "ldap://localhost:389/";
     public static final String BASE_URL = URL + BASE_DN;
     public static final String USER_CONTEXT = "ou=people,dc=imolinfo,dc=it";
     public static final String GROUP_CONTEXT = "ou=groups,dc=imolinfo,dc=it";
 
-    public static  void jsonUserBuilder(NamingEnumeration<SearchResult> answer, JSONArray jArray) throws NamingException, JSONException {
+    public static void jsonUserBuilder(NamingEnumeration<SearchResult> answer, JSONArray jArray) throws NamingException, JSONException {
         while (answer.hasMore()) {
             SearchResult result = (SearchResult) answer.next();
             Attributes a = result.getAttributes();
