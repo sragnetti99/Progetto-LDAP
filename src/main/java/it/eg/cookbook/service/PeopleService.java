@@ -26,8 +26,6 @@ public class PeopleService {
     @Autowired
     private Environment env;
 
-
-
     private Hashtable<String, String> getLdapContextEnv(String url) {
         Hashtable<String, String> environment = new Hashtable<>();
         environment.put(Context.INITIAL_CONTEXT_FACTORY, env.getProperty("ldap.context"));
@@ -125,8 +123,8 @@ public class PeopleService {
             mods[4] = putNewModificationAttribute("uidNumber",user.getUidNumber());
         }
 
-        String hashedPwdSambaNt = PasswordUtil.generateSSHA(user.getSambaNTPassword().getBytes(StandardCharsets.UTF_8));
         String hashedPwdSambaLm = PasswordUtil.generateSSHA(user.getSambaLMPassword().getBytes(StandardCharsets.UTF_8));
+        String hashedPwdSambaNt = PasswordUtil.generateSSHA(user.getSambaNTPassword().getBytes(StandardCharsets.UTF_8));
         mods[5] = putNewModificationAttribute("sambaLMPassword",hashedPwdSambaLm);
         mods[6] = putNewModificationAttribute("sambaNTPassword",hashedPwdSambaNt);
         mods[7] = putNewModificationAttribute("sambaSID", "S-1-5-21-1288326302-1102467403-3443272390-3000");

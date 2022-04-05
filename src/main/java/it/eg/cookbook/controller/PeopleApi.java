@@ -6,7 +6,6 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import it.eg.cookbook.model.ResponseMessage;
 import it.eg.cookbook.model.User;
-import org.json.JSONException;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -31,7 +30,7 @@ public interface PeopleApi {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok", response = ResponseMessage.class)
     })
-    ResponseMessage deleteUser(@RequestBody String cn) throws JSONException, NamingException;
+    ResponseMessage deleteUser(@RequestBody String cn) throws NamingException;
 
     @ApiOperation(value = "Modifica un utente")
     @ApiResponses(value = {
