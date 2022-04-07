@@ -13,7 +13,6 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import javax.naming.NamingException;
-import java.security.NoSuchAlgorithmException;
 
 @RestController
 @RequestMapping("/api/v1/people")
@@ -63,7 +62,7 @@ public class PeopleController implements PeopleApi {
         try {
             this.peopleService.putUser(user);
             return new ResponseMessage(true, ResponseCode.OK, "Utente aggiornato correttamente");
-        } catch (NamingException | NoSuchAlgorithmException e) {
+        } catch (NamingException e) {
             throw new BusinessException(ResponseCode.USER_NOT_FOUND);
         } catch (JSONException e) {
             throw new BusinessException(ResponseCode.BAD_FORMAT);

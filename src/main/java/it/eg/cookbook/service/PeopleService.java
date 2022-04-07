@@ -1,8 +1,8 @@
 package it.eg.cookbook.service;
 
 import it.eg.cookbook.Utils.PasswordUtil;
-import it.eg.cookbook.model.User;
 import it.eg.cookbook.Utils.Utility;
+import it.eg.cookbook.model.User;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -16,7 +16,6 @@ import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.*;
 import java.nio.charset.StandardCharsets;
-import java.security.NoSuchAlgorithmException;
 import java.util.Hashtable;
 
 @Service
@@ -72,14 +71,6 @@ public class PeopleService {
             container.put(new BasicAttribute("uid", user.getCn()));
             String hashedPwd = PasswordUtil.generateSSHA(user.getPassword().getBytes(StandardCharsets.UTF_8));
             container.put(new BasicAttribute("userPassword", hashedPwd));
-
-            String lmPassword = PasswordUtil.hashLMPassword(user.getSambaLMPassword());
-            System.out.println(lmPassword);
-            container.put(new BasicAttribute("sambaLMPassword", lmPassword));
-
-            String ntPassword = PasswordUtil.hashNTPassword(user.getSambaNTPassword());
-            container.put(new BasicAttribute("sambaNTPassword", ntPassword));
-
             container.put(new BasicAttribute("sambaSID", "S-1-5-21-1288326302-1102467403-3443272390-3000"));
             container.put(new BasicAttribute("homeDirectory", "/home/users/"+user.getCn()));
             container.put(new BasicAttribute("loginShell", "/bin/bash"));
@@ -102,10 +93,10 @@ public class PeopleService {
         context.destroySubcontext("cn="+cn+","+ Utility.USER_CONTEXT);
     }
 
-    public void putUser(User user) throws NamingException, NoSuchAlgorithmException, JSONException {
+    public void putUser(User user) throws NamingException, JSONException {
         DirContext ldapContext = new InitialDirContext(this.getLdapContextEnv(Utility.URL));
 
-        ModificationItem[] mods = new ModificationItem[13];
+        ModificationItem[] mods = new ModificationItem[11];
 
         Attribute objClasses = new BasicAttribute("objectClass","inetOrgPerson");
         objClasses.add("top");
@@ -123,16 +114,12 @@ public class PeopleService {
             mods[4] = putNewModificationAttribute("uidNumber",user.getUidNumber());
         }
 
-        String hashedPwdSambaLm = PasswordUtil.generateSSHA(user.getSambaLMPassword().getBytes(StandardCharsets.UTF_8));
-        String hashedPwdSambaNt = PasswordUtil.generateSSHA(user.getSambaNTPassword().getBytes(StandardCharsets.UTF_8));
-        mods[5] = putNewModificationAttribute("sambaLMPassword",hashedPwdSambaLm);
-        mods[6] = putNewModificationAttribute("sambaNTPassword",hashedPwdSambaNt);
-        mods[7] = putNewModificationAttribute("sambaSID", "S-1-5-21-1288326302-1102467403-3443272390-3000");
-        mods[8] = putNewModificationAttribute("homeDirectory","/home/users/"+user.getCn());
-        mods[9] = putNewModificationAttribute("loginShell","/bin/bash");
-        mods[10] = putNewModificationAttribute("sambaAcctFlags","[U]");
-        mods[11] = putNewModificationAttribute("gidNumber","500");
-        mods[12] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, objClasses);
+        mods[5] = putNewModificationAttribute("sambaSID", "S-1-5-21-1288326302-1102467403-3443272390-3000");
+        mods[6] = putNewModificationAttribute("homeDirectory","/home/users/"+user.getCn());
+        mods[7] = putNewModificationAttribute("loginShell","/bin/bash");
+        mods[8] = putNewModificationAttribute("sambaAcctFlags","[U]");
+        mods[9] = putNewModificationAttribute("gidNumber","500");
+        mods[10] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, objClasses);
 
         ldapContext.modifyAttributes("cn=" + user.getCn() + "," + Utility.USER_CONTEXT, mods);
     }

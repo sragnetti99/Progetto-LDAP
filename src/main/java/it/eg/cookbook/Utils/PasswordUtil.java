@@ -1,9 +1,5 @@
 package it.eg.cookbook.Utils;
 
-import jcifs.util.Hexdump;
-import jcifs.util.MD4;
-
-import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -32,17 +28,4 @@ public final class PasswordUtil {
                 .append(Base64.getEncoder().encodeToString(hashPlusSalt))
                 .toString();
     }
-
-    public static String hashNTPassword(String password) throws UnsupportedEncodingException {
-        MD4 md4 = new MD4();
-        byte[] bpass = password.getBytes("UnicodeLittleUnmarked");
-        md4.engineUpdate(bpass, 0, bpass.length);
-        byte[] hashbytes = md4.engineDigest();
-        return Hexdump.toHexString(hashbytes, 0, hashbytes.length * 2);
-    }
-
-    public static String hashLMPassword(String password) throws NoSuchAlgorithmException {
-        return "";
-    }
-
 }
