@@ -1,6 +1,5 @@
 package it.eg.cookbook.model;
 
-import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
@@ -31,25 +30,19 @@ public class User {
     @ApiModelProperty(notes = "uid", position = 6, example = "sragnetti")
     private String uid;
 
-    @ApiModelProperty(notes= "sambaLMPassword", position = 7, example = "password")
-    private String sambaLMPassword;
-
-    @ApiModelProperty(notes= "sambaNTPassword", position = 8, example = "password")
-    private String sambaNTPassword;
-
-    @ApiModelProperty(notes= "sambaSID", position = 9, example = "S-1-5-21-1288326302-1102467403-3443272390-3000")
+    @ApiModelProperty(notes= "sambaSID", position = 7, example = "S-1-5-21-1288326302-1102467403-3443272390-3000")
     private String sambaSID;
 
-    @ApiModelProperty(notes= "sambaAcctFlags", position = 10, example = "U")
+    @ApiModelProperty(notes= "sambaAcctFlags", position = 8, example = "U")
     private String sambaAcctFlags;
 
-    @ApiModelProperty(notes= "uidNumber", position = 11, example = "1000")
+    @ApiModelProperty(notes= "uidNumber", position = 9, example = "1000")
     private String uidNumber;
 
-    @ApiModelProperty(notes= "homeDirectory", position = 12, example = "/home/users/sragnetti")
+    @ApiModelProperty(notes= "homeDirectory", position = 10, example = "/home/users/sragnetti")
     private String homeDirectory;
 
-    @ApiModelProperty(notes= "loginShell", position = 13, example = "/bin/bash")
+    @ApiModelProperty(notes= "loginShell", position = 11, example = "/bin/bash")
     private String loginShell;
 
 
