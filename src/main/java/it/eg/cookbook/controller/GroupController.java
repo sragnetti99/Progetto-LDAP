@@ -54,12 +54,12 @@ public class GroupController implements GroupApi {
             /* else if(this.groupService.findUserInGroup(member, groupId).length() <= 2){
                 throw new BusinessException(ResponseCode.USER_NOT_IN_GROUP);
             } */
-        } catch (JSONException e) {
+        } catch (JSONException | IndexOutOfBoundsException e) {
             throw new BusinessException(ResponseCode.BAD_FORMAT);
         } catch (NoSuchAttributeException e) {
             throw new BusinessException(ResponseCode.USER_NOT_IN_GROUP);
         } catch (NamingException e) {
-            throw new BusinessException(ResponseCode.GROUP_NOT_FOUND);
+            throw new BusinessException(ResponseCode.WRONG_DN);
         }
     }
 

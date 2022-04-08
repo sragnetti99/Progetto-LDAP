@@ -16,6 +16,7 @@ import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.*;
 import java.nio.charset.StandardCharsets;
+import java.security.NoSuchAlgorithmException;
 import java.util.Hashtable;
 
 @Service
@@ -49,43 +50,35 @@ public class PeopleService {
         return jArray.toString();
     }
 
-    public boolean save(User user) {
+    public void save(User user) throws NoSuchAlgorithmException, JSONException, NamingException {
+        DirContext ldapContext = new InitialDirContext(this.getLdapContextEnv(Utility.URL));
+        Attribute objClasses = new BasicAttribute("objectClass");
+        objClasses.add("person");
+        objClasses.add("inetOrgPerson");
+        objClasses.add("organizationalPerson");
+        objClasses.add("sambaSamAccount");
+        objClasses.add("posixAccount");
+        objClasses.add("top");
 
-        try {
-
-            DirContext ldapContext = new InitialDirContext(this.getLdapContextEnv(Utility.URL));
-            Attribute objClasses = new BasicAttribute("objectClass");
-            objClasses.add("person");
-            objClasses.add("inetOrgPerson");
-            objClasses.add("organizationalPerson");
-            objClasses.add("sambaSamAccount");
-            objClasses.add("posixAccount");
-            objClasses.add("top");
-
-            Attributes container = new BasicAttributes();
-            container.put(objClasses);
-            container.put(new BasicAttribute("cn", user.getCn()));
-            container.put( new BasicAttribute("givenName", user.getGivenName()));
-            container.put(new BasicAttribute("sn", user.getSn()));
-            container.put(new BasicAttribute("mail", user.getEmail()));
-            container.put(new BasicAttribute("uid", user.getCn()));
-            String hashedPwd = PasswordUtil.generateSSHA(user.getPassword().getBytes(StandardCharsets.UTF_8));
-            container.put(new BasicAttribute("userPassword", hashedPwd));
-            container.put(new BasicAttribute("sambaSID", "S-1-5-21-1288326302-1102467403-3443272390-3000"));
-            container.put(new BasicAttribute("homeDirectory", "/home/users/"+user.getCn()));
-            container.put(new BasicAttribute("loginShell", "/bin/bash"));
-            container.put(new BasicAttribute("uidNumber",String.valueOf(getMaxUidNumber()+1)));
-            container.put(new BasicAttribute("gidNumber","500"));
-            container.put(new BasicAttribute("sambaAcctFlags","[U]"));
-            String userDN = "cn=" + user.getCn() + "," + Utility.USER_CONTEXT;
-            log.debug(container.toString());
-            ldapContext.createSubcontext(userDN, container);
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            log.debug(e.getMessage());
-            return false;
-        }
+        Attributes container = new BasicAttributes();
+        container.put(objClasses);
+        container.put(new BasicAttribute("cn", user.getCn()));
+        container.put( new BasicAttribute("givenName", user.getGivenName()));
+        container.put(new BasicAttribute("sn", user.getSn()));
+        container.put(new BasicAttribute("mail", user.getEmail()));
+        container.put(new BasicAttribute("uid", user.getCn()));
+        String hashedPwd = PasswordUtil.generateSSHA(user.getPassword().getBytes(StandardCharsets.UTF_8));
+        container.put(new BasicAttribute("userPassword", hashedPwd));
+        container.put(new BasicAttribute("sambaSID", "S-1-5-21-1288326302-1102467403-3443272390-3000"));
+        container.put(new BasicAttribute("homeDirectory", "/home/users/"+user.getCn()));
+        container.put(new BasicAttribute("loginShell", "/bin/bash"));
+        container.put(new BasicAttribute("uidNumber",String.valueOf(getMaxUidNumber()+1)));
+        container.put(new BasicAttribute("gidNumber","500"));
+        container.put(new BasicAttribute("sambaAcctFlags","[U]"));
+        String userDN = "cn=" + user.getCn() + "," + Utility.USER_CONTEXT;
+        log.debug(container.toString());
+        ldapContext.createSubcontext(userDN, container);
+        ldapContext.close();
     }
 
     public void deleteUser(String cn) throws NamingException {
@@ -122,6 +115,7 @@ public class PeopleService {
         mods[10] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, objClasses);
 
         ldapContext.modifyAttributes("cn=" + user.getCn() + "," + Utility.USER_CONTEXT, mods);
+        ldapContext.close();
     }
 
     private ModificationItem putNewModificationAttribute(String key, Object value) {

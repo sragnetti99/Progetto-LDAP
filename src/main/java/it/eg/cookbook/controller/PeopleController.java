@@ -13,6 +13,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import javax.naming.NamingException;
+import java.security.NoSuchAlgorithmException;
 
 @RestController
 @RequestMapping("/api/v1/people")
@@ -27,7 +28,7 @@ public class PeopleController implements PeopleApi {
         try {
             return peopleService.getAllUsers();
         } catch (NamingException e) {
-            throw new BusinessException(ResponseCode.GROUP_NOT_FOUND);
+            throw new BusinessException(ResponseCode.GENERIC);
         } catch (JSONException e) {
             throw new BusinessException(ResponseCode.BAD_FORMAT);
         }
@@ -35,9 +36,14 @@ public class PeopleController implements PeopleApi {
 
     @PostMapping(path = "/", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseMessage postUser(@RequestBody User user) {
-        if(this.peopleService.save(user)){
+        try {
+            this.peopleService.save(user);
             return new ResponseMessage(true, ResponseCode.OK, "Utente inserito correttamente");
-        } else {
+        } catch (NoSuchAlgorithmException e) {
+            throw new BusinessException(ResponseCode.GENERIC);
+        } catch (JSONException e) {
+            throw new BusinessException(ResponseCode.BAD_FORMAT);
+        } catch (NamingException e) {
             throw new BusinessException(ResponseCode.USER_EXISTS);
         }
     }

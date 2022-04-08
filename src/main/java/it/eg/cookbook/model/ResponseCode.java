@@ -10,6 +10,7 @@ public enum ResponseCode {
     USER_EXISTS("Utente già presente"),
     USER_NOT_IN_GROUP("L'utente non è presente all'interno del gruppo"),
     BAD_FORMAT("Il body inserito non è nel formato corretto"),
+    WRONG_DN("Errore nell'inserimento del dn"),
     GENERIC("Errore generico");
 
     private String message;
