@@ -58,10 +58,7 @@ class GroupTest {
         MvcResult mvcResult = mockMvc
                 .perform(MockMvcRequestBuilders.get(URI_ID, "Antreem").accept(MediaType.APPLICATION_JSON_VALUE))
                 .andReturn();
-
-        // Verifico lo stato della risposta
         assertEquals(HttpStatus.OK.value(), mvcResult.getResponse().getStatus());
-
         // Verifico che nel gruppo ci siano degli utenti
         Array[] members = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), Array[].class);
         assertTrue(members.length > 0);
@@ -73,8 +70,6 @@ class GroupTest {
         MvcResult mvcResult = mockMvc
                 .perform(MockMvcRequestBuilders.get(URI_ID, "XX").accept(MediaType.APPLICATION_JSON_VALUE))
                 .andReturn();
-
-        // Verifico lo stato della risposta
         assertEquals(HttpStatus.BAD_REQUEST.value(), mvcResult.getResponse().getStatus());
 
         // Verifico che lo Documento sia corretto
@@ -87,14 +82,62 @@ class GroupTest {
 
     @Test
     @Order(4)
+    void addUserInGroupTest() throws Exception {
+        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.post(URI_ID, "Antreem")
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .content("{\"uniquemember\": [\"cn=utente,ou=people,dc=imolinfo,dc=it\"]}"))
+                .andReturn();
+
+        assertEquals(HttpStatus.OK.value(), mvcResult.getResponse().getStatus());
+
+        ResponseMessage responseMessage = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), ResponseMessage.class);
+        assertEquals(ResponseCode.OK.name(), responseMessage.getCode());
+        assertNull(responseMessage.getSuccess());
+        assertNull(responseMessage.getMessage());
+        assertNull(responseMessage.getDescription());
+
+        List<UserStatus> list = new ArrayList<>();
+        UserStatus status = new UserStatus();
+        status.setStatus("Utente esistente");
+        status.setCn("utente");
+        list.add(status);
+        assertEquals(list.get(0), responseMessage.getResult().get(0));
+    }
+
+    @Test
+    @Order(5)
+    void addUserInGroupTestKO() throws Exception {
+        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.post(URI_ID, "Antreem")
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .content("{\"uniquemember\": [\"cn=utente,ou=people,dc=imolinfo,dc=it\"]}"))
+                .andReturn();
+
+        assertEquals(HttpStatus.OK.value(), mvcResult.getResponse().getStatus());
+
+        ResponseMessage responseMessage = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), ResponseMessage.class);
+        assertEquals(ResponseCode.OK.name(), responseMessage.getCode());
+        assertNull(responseMessage.getSuccess());
+        assertNull(responseMessage.getMessage());
+        assertNull(responseMessage.getDescription());
+
+        List<UserStatus> list = new ArrayList<>();
+        UserStatus status = new UserStatus();
+        status.setStatus("Utente già presente");
+        status.setCn("utente");
+        list.add(status);
+        assertEquals(list.get(0), responseMessage.getResult().get(0));
+    }
+
+    @Test
+    @Order(6)
     void deleteUserFromGroupTest() throws Exception {
         MvcResult mvcResult = mockMvc
                 .perform(MockMvcRequestBuilders.delete(URI_ID, "Antreem")
                         .accept(MediaType.APPLICATION_JSON_VALUE)
-                        .content("{\"uniquemember\": \"cn=sragnetti,ou=people,dc=imolinfo,dc=it\"}"))
+                        .content("{\"uniquemember\": \"cn=utente,ou=people,dc=imolinfo,dc=it\"}"))
                 .andReturn();
-
-        // Verifico lo stato della risposta
         assertEquals(HttpStatus.OK.value(), mvcResult.getResponse().getStatus());
 
         // Verifico che la response della DELETE sia corretta
@@ -106,7 +149,7 @@ class GroupTest {
     }
 
     @Test
-    @Order(5)
+    @Order(7)
     void deleteUserFromGroupTestKO() throws Exception {
         MvcResult mvcResult = mockMvc
                 .perform(MockMvcRequestBuilders.delete(URI_ID, "XX")
@@ -128,7 +171,7 @@ class GroupTest {
         MvcResult mvcResult2 = mockMvc
                 .perform(MockMvcRequestBuilders.delete(URI_ID, "Antreem")
                         .accept(MediaType.APPLICATION_JSON_VALUE)
-                        .content("{\"uniquemember\": \"cn=sragnetti,,dc=imolinfo,dc=it\"}"))
+                        .content("{\"uniquemember\": \"cn=utente,,dc=imolinfo,dc=it\"}"))
                 .andReturn();
 
         assertEquals(HttpStatus.BAD_REQUEST.value(), mvcResult2.getResponse().getStatus());
@@ -139,7 +182,7 @@ class GroupTest {
         assertEquals(ResponseCode.WRONG_DN.getMessage(), responseMessage2.getMessage());
         assertEquals(null, responseMessage2.getDescription());
 
-    /* MvcResult mvcResult3 = mockMvc
+        MvcResult mvcResult3 = mockMvc
                 .perform(MockMvcRequestBuilders.delete(URI_ID, "Antreem")
                         .accept(MediaType.APPLICATION_JSON_VALUE)
                         .content("{\"uniquemember\": \"cn=utente2,ou=people,dc=imolinfo,dc=it\"}"))
@@ -152,7 +195,7 @@ class GroupTest {
         assertEquals(ResponseCode.USER_NOT_IN_GROUP.name(), responseMessage3.getCode());
         assertEquals(ResponseCode.USER_NOT_IN_GROUP.getMessage(), responseMessage3.getMessage());
         assertEquals(null, responseMessage3.getDescription());
-    */
+
         // L'utente "uten" non esiste
         MvcResult mvcResult4 = mockMvc
                 .perform(MockMvcRequestBuilders.delete(URI_ID, "Antreem")
@@ -169,86 +212,4 @@ class GroupTest {
         assertEquals(null, responseMessage4.getDescription());
     }
 
-    @Test
-    @Order(6)
-    void addUserInGroupTest() throws Exception {
-        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.post(URI_ID, "Antreem")
-                .accept(MediaType.APPLICATION_JSON_VALUE)
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content("{\"uniquemember\": [\"cn=sragnetti,ou=people,dc=imolinfo,dc=it\"]}"))
-                .andReturn();
-
-        assertEquals(HttpStatus.OK.value(), mvcResult.getResponse().getStatus());
-
-        ResponseMessage responseMessage = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), ResponseMessage.class);
-        assertEquals(ResponseCode.OK.name(), responseMessage.getCode());
-        assertNull(responseMessage.getSuccess());
-        assertNull(responseMessage.getMessage());
-        assertNull(responseMessage.getDescription());
-
-        List<UserStatus> list = new ArrayList<>();
-        UserStatus status = new UserStatus();
-        status.setStatus("Utente esistente");
-        status.setCn("sragnetti");
-        list.add(status);
-        assertEquals(list.get(0), responseMessage.getResult().get(0));
-    }
-
-    @Test
-    @Order(7)
-    void addUserInGroupTestKO() throws Exception {
-        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.post(URI_ID, "Antreem")
-                .accept(MediaType.APPLICATION_JSON_VALUE)
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content("{\"uniquemember\": [\"cn=sragnetti,ou=people,dc=imolinfo,dc=it\"]}"))
-                .andReturn();
-
-        assertEquals(HttpStatus.OK.value(), mvcResult.getResponse().getStatus());
-
-        ResponseMessage responseMessage = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), ResponseMessage.class);
-        assertEquals(ResponseCode.OK.name(), responseMessage.getCode());
-        assertNull(responseMessage.getSuccess());
-        assertNull(responseMessage.getMessage());
-        assertNull(responseMessage.getDescription());
-
-        List<UserStatus> list = new ArrayList<>();
-        UserStatus status = new UserStatus();
-        status.setStatus("Utente già presente");
-        status.setCn("sragnetti");
-        list.add(status);
-        assertEquals(list.get(0), responseMessage.getResult().get(0));
-    }
-
-    /*
-    *     @Test
-    @Order(6)
-    void postDocumentTest() throws Exception {
-        User user = new User();
-        user.setCn("utenteProva");
-        user.setEmail("utente@imolinfo.it");
-        user.setGivenName("utente");
-        user.setHomeDirectory("/home/users/utente");
-        user.setPassword("password");
-        user.setLoginShell("/bin/bash");
-        user.setSambaAcctFlags("[U]");
-        user.setSambaSID("S-1-5-21-1288326302-1102467403-3443272390-3000");
-        user.setSn("utente");
-        user.setUid("utente");
-        user.setUidNumber("1000");
-
-        String userStr = objectMapper.writeValueAsString(user);
-        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.post(URI)
-                .accept(MediaType.APPLICATION_JSON_VALUE)
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(userStr))
-                .andReturn();
-
-        assertEquals(HttpStatus.OK.value(), mvcResult.getResponse().getStatus());
-
-        ResponseMessage responseMessage = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), ResponseMessage.class);
-        assertEquals(true, responseMessage.getSuccess());
-        assertEquals(ResponseCode.OK.name(), responseMessage.getCode());
-        assertEquals(ResponseCode.OK.getMessage(), responseMessage.getMessage());
-        assertEquals("Utente inserito correttamente", responseMessage.getDescription());
-    }*/
 }

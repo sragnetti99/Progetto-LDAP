@@ -23,9 +23,18 @@ import java.util.Hashtable;
 @Slf4j
 public class PeopleService {
 
-    @Autowired
-    private Environment env;
-
+        @Autowired
+        private Environment env;
+//    private Integer port;
+//
+//    public PeopleService(int port){
+//        this.port = port;
+//    }
+//
+//    public PeopleService() {
+//        SpringBeanAutowiringSupport.processInjectionBasedOnCurrentContext(this);
+//    }
+//
     private Hashtable<String, String> getLdapContextEnv(String url) {
         Hashtable<String, String> environment = new Hashtable<>();
         environment.put(Context.INITIAL_CONTEXT_FACTORY, env.getProperty("ldap.context"));
@@ -35,6 +44,25 @@ public class PeopleService {
         environment.put(Context.SECURITY_CREDENTIALS, env.getProperty("ldap.password"));
         return environment;
     }
+
+//    private InitialDirContext context
+
+//    public PeopleService(String initialContextFactory, String ldapUrl, String username, String password)
+//            throws NamingException {
+//        Hashtable env = new Hashtable(5, 0.75f);
+//
+//        // Contetx Factory
+//        env.put(Context.INITIAL_CONTEXT_FACTORY, initialContextFactory);
+//        env.put(Context.PROVIDER_URL, ldapUrl);
+//        env.put(Context.SECURITY_AUTHENTICATION, "simple");
+//        env.put(Context.SECURITY_PRINCIPAL, username);
+//        env.put(Context.SECURITY_CREDENTIALS, password);
+//
+//        context = new InitialDirContext(env);
+//
+//    }
+
+
 
     public String getAllUsers() throws NamingException, JSONException {;
         String filter = "objectclass=person";

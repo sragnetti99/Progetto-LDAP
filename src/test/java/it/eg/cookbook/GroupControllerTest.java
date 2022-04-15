@@ -60,19 +60,6 @@ public class GroupControllerTest {
     }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(389);
 

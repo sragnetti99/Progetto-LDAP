@@ -52,7 +52,7 @@ public class PeopleController implements PeopleApi {
     public ResponseMessage deleteUser(@RequestBody String cn) throws NamingException {
         try {
             String commonName = new JSONObject(cn).getString("cn");
-            if (this.peopleService.findUser(commonName).length() <= 2) {
+            if (this.peopleService.findUser(commonName) == null || this.peopleService.findUser(commonName).length() <= 2) {
                 throw new BusinessException(ResponseCode.USER_NOT_FOUND);
             } else {
                 this.peopleService.deleteUser(commonName);
