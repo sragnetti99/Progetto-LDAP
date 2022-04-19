@@ -25,6 +25,8 @@ public class PeopleService {
 
         @Autowired
         private Environment env;
+
+    DirContext ldapContext = null;
 //    private Integer port;
 //
 //    public PeopleService(int port){
@@ -35,6 +37,14 @@ public class PeopleService {
 //        SpringBeanAutowiringSupport.processInjectionBasedOnCurrentContext(this);
 //    }
 //
+    public PeopleService(){
+
+    }
+
+    public PeopleService(Hashtable<String,String> env) throws NamingException {
+        ldapContext = new InitialDirContext(env);
+
+    }
     private Hashtable<String, String> getLdapContextEnv(String url) {
         Hashtable<String, String> environment = new Hashtable<>();
         environment.put(Context.INITIAL_CONTEXT_FACTORY, env.getProperty("ldap.context"));
@@ -79,7 +89,7 @@ public class PeopleService {
     }
 
     public void save(User user) throws NoSuchAlgorithmException, JSONException, NamingException {
-        DirContext ldapContext = new InitialDirContext(this.getLdapContextEnv(Utility.URL));
+
         Attribute objClasses = new BasicAttribute("objectClass");
         objClasses.add("person");
         objClasses.add("inetOrgPerson");
