@@ -4,7 +4,11 @@ import it.eg.cookbook.model.User;
 import it.eg.cookbook.service.PeopleService;
 import org.json.JSONException;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -14,13 +18,24 @@ import javax.naming.NamingException;
 import java.security.NoSuchAlgorithmException;
 
 @Testcontainers
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class LdapIntegrationTest {
 
 //    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+//    @Mock
 //    Environment env;
 //
 //    @InjectMocks
 //    private PeopleService service;
+
+    @Mock
+    private PeopleService service;
+
+    @BeforeAll
+    public void init() {
+        MockitoAnnotations.initMocks(this);
+//        MockitoAnnotations.initMocks(LdapIntegrationTest.class);
+    }
 
     private User createUser(String cn) {
         User user = new User();

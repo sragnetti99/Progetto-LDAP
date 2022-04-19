@@ -7,7 +7,6 @@ import it.eg.cookbook.controller.GroupController;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.junit.Rule;
@@ -46,19 +45,6 @@ public class GroupControllerTest {
 
     @MockBean
     GroupController controller;
-
-    @Test
-    public void getAllGroups_success() throws Exception {
-        Mockito.when(controller.getAllGroups()); //.thenReturn("");
-
-        mockMvc.perform(MockMvcRequestBuilders
-                .get("/")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(4)))
-                .andExpect(jsonPath("$[2].name", is("Betoola")));
-    }
-
 
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(389);
@@ -133,70 +119,49 @@ public class GroupControllerTest {
         wireMockServer.stop();
     }
 
-    // Request header matching
-    @Test
-    @Order(2)
-    public void testHeader() throws Exception {
-        WireMockServer wireMockServer = new WireMockServer();
-        wireMockServer.start();
-        configureFor("localhost", 389);
-
-        stubFor(get(urlPathMatching("/api/v1/group"))
-                .withHeader("Accept", matching("text/.*"))
-                .willReturn(aResponse()
-                        .withStatus(503)
-                        .withHeader("Content-Type", "text/html")
-                        .withBody("!!! Service Unavailable !!!")));
-
-
-        CloseableHttpClient httpClient = HttpClients.createDefault();
-        HttpGet request = new HttpGet("http://localhost:389/api/v1/group");
-        request.addHeader("Accept", "text/html");
-        HttpResponse httpResponse = httpClient.execute(request);
-        String stringResponse = convertHttpResponseToString(httpResponse);
-
-        verify(getRequestedFor(urlEqualTo("/api/v1/group")));
-        assertEquals(503, httpResponse.getStatusLine().getStatusCode());
-        assertEquals("text/html", httpResponse.getFirstHeader("Content-Type").getValue());
-        assertEquals("!!! Service Unavailable !!!", stringResponse);
-
-        wireMockServer.stop();
-    }
-
     // Request body matching
     @Test
-    @Order(2)
+    @Order(3)
     public void testBody() throws Exception {
         WireMockServer wireMockServer = new WireMockServer();
         wireMockServer.start();
         configureFor("localhost", 389);
+        String groupName = "Antreem";
 
-        stubFor(get(urlPathMatching("/api/v1/group"))
+        stubFor(delete(urlPathMatching("/api/v1/group/"+ groupName))
                 .withHeader("Content-Type", equalTo("application/json"))
-                .withRequestBody(containing("\"testing-library\": \"WireMock\""))
-                .withRequestBody(containing("\"creator\": \"Tom Akehurst\""))
-                .withRequestBody(containing("\"website\": \"wiremock.org\""))
-                .willReturn(aResponse()
-                        .withStatus(200)));
+                .withRequestBody(containing("\"uniquemember\": \"cn=utente,ou=people,dc=imolinfo,dc=it\""))
+                .willReturn(aResponse().withStatus(200)));
 
-        InputStream jsonInputStream
-                = this.getClass().getClassLoader().getResourceAsStream("wiremock_intro.json");
-        String jsonString = convertInputStreamToString(jsonInputStream);
-        StringEntity entity = new StringEntity(jsonString);
+//        InputStream jsonInputStream = this.getClass().getClassLoader().getResourceAsStream("wiremock_intro.json");
+//        String jsonString = convertInputStreamToString(jsonInputStream);
+//        StringEntity entity = new StringEntity(jsonString);
 
         CloseableHttpClient httpClient = HttpClients.createDefault();
-        HttpPost request = new HttpPost("http://localhost:389/api/v1/group");
+        HttpPost request = new HttpPost("http://localhost:389/api/v1/group/" + groupName);
         request.addHeader("Content-Type", "application/json");
-        request.setEntity(entity);
+        //request.setEntity(entity);
         HttpResponse response = httpClient.execute(request);
 
-        verify(getRequestedFor(urlEqualTo("/api/v1/group"))
+        verify(deleteRequestedFor(urlEqualTo("/api/v1/group/"+ groupName))
                 .withHeader("Content-Type", equalTo("application/json")));
         assertEquals(200, response.getStatusLine().getStatusCode());
 
         wireMockServer.stop();
     }
 
+    @Test
+    @Order(4)
+    public void getAllGroups() throws Exception {
+        Mockito.when(controller.getAllGroups()).thenReturn("");
+
+        mockMvc.perform(MockMvcRequestBuilders
+                .get("http://localhost:389/api/v1/group")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(4)))
+                .andExpect(jsonPath("$[2].name", is("Betoola")));
+    }
 
 
 }

@@ -1,6 +1,7 @@
-package it.eg.cookbook;
+package it.eg.cookbook.unitTest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import it.eg.cookbook.Application;
 import it.eg.cookbook.controller.PeopleController;
 import it.eg.cookbook.model.ResponseCode;
 import it.eg.cookbook.model.ResponseMessage;
@@ -25,11 +26,10 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-
 @SpringBootTest(webEnvironment= SpringBootTest.WebEnvironment.MOCK, classes={ Application.class })
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class PeopleControllerTestUT {
+class PeopleTest {
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -44,7 +44,7 @@ public class PeopleControllerTestUT {
 
     private MockMvc mockMvc;
 
-    @BeforeAll
+    @BeforeEach
     void createMock() {
         this.mockMvc = MockMvcBuilders.standaloneSetup(peopleController).build();
     }
@@ -186,11 +186,11 @@ public class PeopleControllerTestUT {
     @Order(4)
     void deleteUser() throws Exception {
         String userStr = objectMapper.writeValueAsString(this.createUser("utenteProva"));
-        MvcResult mvcResultAdd = this.mockMvc.perform(post(URI)
-                .accept(MediaType.APPLICATION_JSON_VALUE)
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(userStr))
-                .andReturn();
+//        MvcResult mvcResultAdd = this.mockMvc.perform(post(URI)
+//                .accept(MediaType.APPLICATION_JSON_VALUE)
+//                .contentType(MediaType.APPLICATION_JSON_VALUE)
+//                .content(userStr))
+//                .andReturn();
 
         MvcResult mvcResult = this.mockMvc
                     .perform(MockMvcRequestBuilders.delete(URI)

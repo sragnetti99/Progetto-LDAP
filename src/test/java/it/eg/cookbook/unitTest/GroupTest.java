@@ -1,4 +1,4 @@
-package it.eg.cookbook;
+package it.eg.cookbook.unitTest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.eg.cookbook.model.ResponseCode;
@@ -39,7 +39,7 @@ class GroupTest {
 
     @Test
     @Order(1)
-    public void getGroupsTest() throws Exception {
+    void getGroupsTest() throws Exception {
         MvcResult mvcResult = mockMvc
                 .perform(MockMvcRequestBuilders.get(URI).accept(MediaType.APPLICATION_JSON_VALUE))
                 .andReturn();
