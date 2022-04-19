@@ -22,6 +22,7 @@ public class GroupController implements GroupApi {
 
     @Autowired
     private GroupService groupService;
+
     @Autowired
     private PeopleService peopleService;
 

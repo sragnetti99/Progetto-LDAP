@@ -23,73 +23,37 @@ import java.util.Hashtable;
 @Slf4j
 public class PeopleService {
 
-        @Autowired
-        private Environment env;
+    @Autowired
+    private Environment env;
 
-    DirContext ldapContext = null;
-//    private Integer port;
-//
-//    public PeopleService(int port){
-//        this.port = port;
-//    }
-//
-//    public PeopleService() {
-//        SpringBeanAutowiringSupport.processInjectionBasedOnCurrentContext(this);
-//    }
-//
-    public PeopleService(){
+    private final DirContext ldapContext;
 
+    public PeopleService() throws NamingException {
+        Hashtable<String, String> environment = new Hashtable<>();
+        environment.put(Context.INITIAL_CONTEXT_FACTORY, env.getProperty("ldap.context"));
+        environment.put(Context.PROVIDER_URL, Utility.URL);
+        environment.put(Context.SECURITY_AUTHENTICATION, "simple");
+        environment.put(Context.SECURITY_PRINCIPAL, env.getProperty("ldap.username"));
+        environment.put(Context.SECURITY_CREDENTIALS, env.getProperty("ldap.password"));
+        this.ldapContext =  new InitialDirContext(environment);
     }
 
     public PeopleService(Hashtable<String,String> env) throws NamingException {
         ldapContext = new InitialDirContext(env);
-
     }
-    private Hashtable<String, String> getLdapContextEnv(String url) {
-        Hashtable<String, String> environment = new Hashtable<>();
-        environment.put(Context.INITIAL_CONTEXT_FACTORY, env.getProperty("ldap.context"));
-        environment.put(Context.PROVIDER_URL, url);
-        environment.put(Context.SECURITY_AUTHENTICATION, "simple");
-        environment.put(Context.SECURITY_PRINCIPAL, env.getProperty("ldap.username"));
-        environment.put(Context.SECURITY_CREDENTIALS, env.getProperty("ldap.password"));
-        return environment;
-    }
-
-//    private InitialDirContext context
-
-//    public PeopleService(String initialContextFactory, String ldapUrl, String username, String password)
-//            throws NamingException {
-//        Hashtable env = new Hashtable(5, 0.75f);
-//
-//        // Contetx Factory
-//        env.put(Context.INITIAL_CONTEXT_FACTORY, initialContextFactory);
-//        env.put(Context.PROVIDER_URL, ldapUrl);
-//        env.put(Context.SECURITY_AUTHENTICATION, "simple");
-//        env.put(Context.SECURITY_PRINCIPAL, username);
-//        env.put(Context.SECURITY_CREDENTIALS, password);
-//
-//        context = new InitialDirContext(env);
-//
-//    }
-
-
 
     public String getAllUsers() throws NamingException, JSONException {;
         String filter = "objectclass=person";
-        DirContext ldapContext = new InitialDirContext(this.getLdapContextEnv(Utility.BASE_URL));
         SearchControls searchControls = new SearchControls();
         searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-        NamingEnumeration<SearchResult> answer = ldapContext.search("", filter, searchControls);
+        NamingEnumeration<SearchResult> answer = ldapContext.search("ldap://localhost:389/dc=imolinfo,dc=it", filter, searchControls);
         JSONArray jArray = new JSONArray();
         Utility.jsonUserBuilder(answer, jArray);
         answer.close();
-
-        ldapContext.close();
         return jArray.toString();
     }
 
     public void save(User user) throws NoSuchAlgorithmException, JSONException, NamingException {
-
         Attribute objClasses = new BasicAttribute("objectClass");
         objClasses.add("person");
         objClasses.add("inetOrgPerson");
@@ -116,19 +80,14 @@ public class PeopleService {
         String userDN = "cn=" + user.getCn() + "," + Utility.USER_CONTEXT;
         log.debug(container.toString());
         ldapContext.createSubcontext(userDN, container);
-        ldapContext.close();
     }
 
     public void deleteUser(String cn) throws NamingException {
-        DirContext context = new InitialDirContext(this.getLdapContextEnv(Utility.URL));
-        context.destroySubcontext("cn="+cn+","+ Utility.USER_CONTEXT);
+        ldapContext.destroySubcontext("cn="+cn+","+ Utility.USER_CONTEXT);
     }
 
     public void putUser(User user) throws NamingException, JSONException {
-        DirContext ldapContext = new InitialDirContext(this.getLdapContextEnv(Utility.URL));
-
         ModificationItem[] mods = new ModificationItem[11];
-
         Attribute objClasses = new BasicAttribute("objectClass","inetOrgPerson");
         objClasses.add("top");
         objClasses.add("sambaSamAccount");
@@ -153,7 +112,6 @@ public class PeopleService {
         mods[10] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, objClasses);
 
         ldapContext.modifyAttributes("cn=" + user.getCn() + "," + Utility.USER_CONTEXT, mods);
-        ldapContext.close();
     }
 
     private ModificationItem putNewModificationAttribute(String key, Object value) {
@@ -161,13 +119,12 @@ public class PeopleService {
     }
 
     public String findUser(String cn) throws NamingException, JSONException {
-        DirContext ldapContext = new InitialDirContext(this.getLdapContextEnv(Utility.BASE_URL));
         JSONArray jArray = new JSONArray();
 
         String filter = "(&(objectclass=person)(cn="+ cn + "))";
         SearchControls ctrl = new SearchControls();
         ctrl.setSearchScope(SearchControls.SUBTREE_SCOPE);
-        NamingEnumeration<SearchResult> answer = ldapContext.search("", filter, ctrl);
+        NamingEnumeration<SearchResult> answer = ldapContext.search("ldap://localhost:389/dc=imolinfo,dc=it", filter, ctrl);
         Utility.jsonUserBuilder(answer, jArray);
         answer.close();
 
@@ -176,13 +133,11 @@ public class PeopleService {
 
     private Integer getMaxUidNumber() throws JSONException, NamingException {
         Integer maxUid = Integer.valueOf(1000);
-        DirContext ldapContext = new InitialDirContext(this.getLdapContextEnv(Utility.BASE_URL));
-
         JSONArray jArray = new JSONArray();
         String filter = "uidNumber=*";
         SearchControls searchControls = new SearchControls();
         searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-        NamingEnumeration<SearchResult> answer = ldapContext.search("",filter,searchControls);
+        NamingEnumeration<SearchResult> answer = ldapContext.search("ldap://localhost:389/dc=imolinfo,dc=it",filter,searchControls);
         Utility.jsonUserBuilder(answer, jArray);
 
         for(int i =0; i<jArray.length();i++){
@@ -196,7 +151,6 @@ public class PeopleService {
             }
         }
         answer.close();
-        ldapContext.close();
         return maxUid;
     }
 

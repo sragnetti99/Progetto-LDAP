@@ -26,25 +26,30 @@ public class GroupService {
     @Autowired
     private Environment env;
 
-    private Hashtable<String, String> getLdapContextEnv(String url) {
+    private final DirContext ldapContext;
+
+    public GroupService() throws NamingException {
         Hashtable<String, String> environment = new Hashtable<>();
         environment.put(Context.INITIAL_CONTEXT_FACTORY, env.getProperty("ldap.context"));
-        environment.put(Context.PROVIDER_URL, url);
+        environment.put(Context.PROVIDER_URL, Utility.URL);
         environment.put(Context.SECURITY_AUTHENTICATION, "simple");
         environment.put(Context.SECURITY_PRINCIPAL, env.getProperty("ldap.username"));
         environment.put(Context.SECURITY_CREDENTIALS, env.getProperty("ldap.password"));
-        return environment;
+        this.ldapContext =  new InitialDirContext(environment);
+    }
+
+    public GroupService(Hashtable<String,String> env) throws NamingException {
+        ldapContext = new InitialDirContext(env);
     }
 
     public String getUsersInGroup(String groupId) throws NamingException, JSONException {
         String groupDN = "cn=" + groupId + "," + "ou=groups," + Utility.BASE_DN;
-        DirContext context = new InitialDirContext(this.getLdapContextEnv(Utility.URL));
 
         JSONArray jArray = new JSONArray();
         String filter = "uniqueMember=*";
         SearchControls ctrl = new SearchControls();
         ctrl.setSearchScope(SearchControls.SUBTREE_SCOPE);
-        NamingEnumeration<SearchResult> answer = context.search(groupDN, filter, ctrl);
+        NamingEnumeration<SearchResult> answer = ldapContext.search(groupDN, filter, ctrl);
 
         String dn;
         SearchResult result = answer.next();
@@ -63,13 +68,12 @@ public class GroupService {
     }
 
     public JSONArray getAllGroups() throws JSONException, NamingException {
-        DirContext context = new InitialDirContext(this.getLdapContextEnv(Utility.URL));
         JSONArray jArray = new JSONArray();
 
         String filter = "objectclass=groupOfUniqueNames";
         SearchControls ctrl = new SearchControls();
         ctrl.setSearchScope(SearchControls.SUBTREE_SCOPE);
-        NamingEnumeration<SearchResult> answer = context.search(Utility.GROUP_CONTEXT, filter, ctrl);
+        NamingEnumeration<SearchResult> answer = ldapContext.search(Utility.GROUP_CONTEXT, filter, ctrl);
         while (answer.hasMore()) {
             JSONObject cnJson = new JSONObject();
             String cn = answer.next().getAttributes().get("cn").get().toString();
@@ -82,21 +86,19 @@ public class GroupService {
     }
 
     public void deleteUserFromGroup(String uniqueMember, String groupId) throws NamingException, JSONException {
-        DirContext context = new InitialDirContext(this.getLdapContextEnv(Utility.URL));
         BasicAttribute member = new BasicAttribute("uniquemember", new JSONObject(uniqueMember).get("uniquemember"));
         Attributes attributes = new BasicAttributes();
         attributes.put(member);
-        context.modifyAttributes("cn=" + groupId + "," + Utility.GROUP_CONTEXT, DirContext.REMOVE_ATTRIBUTE, attributes);
+        ldapContext.modifyAttributes("cn=" + groupId + "," + Utility.GROUP_CONTEXT, DirContext.REMOVE_ATTRIBUTE, attributes);
     }
 
     public String findUserInGroup(String uniqueMember, String groupId) throws NamingException, JSONException {
-        DirContext context = new InitialDirContext(this.getLdapContextEnv(Utility.URL));
         JSONArray jArray = new JSONArray();
 
         String filter = "uniquemember=" + uniqueMember;
         SearchControls searchControls = new SearchControls();
         searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-        NamingEnumeration<SearchResult> answer = context.search("cn=" + groupId + "," + Utility.GROUP_CONTEXT, filter, searchControls);
+        NamingEnumeration<SearchResult> answer = ldapContext.search("cn=" + groupId + "," + Utility.GROUP_CONTEXT, filter, searchControls);
         Utility.jsonUserBuilder(answer, jArray);
         answer.close();
 
@@ -104,7 +106,6 @@ public class GroupService {
     }
 
     public List<UserStatus> addUsersToGroup(String users, String groupId) throws JSONException, NamingException {
-        DirContext context = new InitialDirContext(this.getLdapContextEnv(Utility.URL));
         JSONObject jsonObject = new JSONObject(users);
         JSONArray members = jsonObject.getJSONArray("uniquemember");
         Attributes attributes = new BasicAttributes();
@@ -124,7 +125,7 @@ public class GroupService {
                 us.setStatus("Utente esistente");
                 BasicAttribute memberAtt = new BasicAttribute("uniquemember", "cn=" + cn + "," + Utility.USER_CONTEXT);
                 attributes.put(memberAtt);
-                context.modifyAttributes("cn=" + groupId + "," + Utility.GROUP_CONTEXT, DirContext.ADD_ATTRIBUTE, attributes);
+                ldapContext.modifyAttributes("cn=" + groupId + "," + Utility.GROUP_CONTEXT, DirContext.ADD_ATTRIBUTE, attributes);
             }
             result.add(us);
         }
