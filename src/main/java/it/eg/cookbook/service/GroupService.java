@@ -37,6 +37,7 @@ public class GroupService {
 
     public GroupService(Hashtable<String,String> env) throws NamingException {
         ldapContext = new InitialDirContext(env);
+        this.peopleService = new PeopleService(env);
     }
 
     public String getUsersInGroup(String groupId) throws NamingException, JSONException {
