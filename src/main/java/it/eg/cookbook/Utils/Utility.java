@@ -22,11 +22,13 @@ public class Utility {
             Attributes a = result.getAttributes();
             JSONObject cnJson = new JSONObject();
 
+            checkIfNullThanReturnEmpty(a,"uid",cnJson);
+
+            checkIfNullThanReturnEmpty(a,"cn",cnJson);
+
             checkIfNullThanReturnEmpty(a,"mail",cnJson);
 
             checkIfNullThanReturnEmpty(a,"userPassword",cnJson);
-
-            checkIfNullThanReturnEmpty(a,"uid",cnJson);
 
             checkIfNullThanReturnEmpty(a,"objectclass",cnJson);
 
@@ -46,11 +48,10 @@ public class Utility {
 
             checkIfNullThanReturnEmpty(a,"sambaAcctFlags",cnJson);
 
+            checkIfNullThanReturnEmpty(a,"sn",cnJson);
 
             jArray.put(cnJson);
         }
-
-
     }
 
     private static void checkIfNullThanReturnEmpty(Attributes a, String key, JSONObject cnJson) throws JSONException, NamingException {
