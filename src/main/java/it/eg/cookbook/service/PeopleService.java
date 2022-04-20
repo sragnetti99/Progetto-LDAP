@@ -2,13 +2,12 @@ package it.eg.cookbook.service;
 
 import it.eg.cookbook.Utils.PasswordUtil;
 import it.eg.cookbook.Utils.Utility;
+import it.eg.cookbook.config.EnvConfiguration;
 import it.eg.cookbook.model.User;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import javax.naming.Context;
@@ -23,18 +22,15 @@ import java.util.Hashtable;
 @Slf4j
 public class PeopleService {
 
-    @Autowired
-    private Environment env;
-
     private final DirContext ldapContext;
 
     public PeopleService() throws NamingException {
         Hashtable<String, String> environment = new Hashtable<>();
-        environment.put(Context.INITIAL_CONTEXT_FACTORY, env.getProperty("ldap.context"));
+        environment.put(Context.INITIAL_CONTEXT_FACTORY, EnvConfiguration.getProperty("ldap.context"));
         environment.put(Context.PROVIDER_URL, Utility.URL);
         environment.put(Context.SECURITY_AUTHENTICATION, "simple");
-        environment.put(Context.SECURITY_PRINCIPAL, env.getProperty("ldap.username"));
-        environment.put(Context.SECURITY_CREDENTIALS, env.getProperty("ldap.password"));
+        environment.put(Context.SECURITY_PRINCIPAL, EnvConfiguration.getProperty("ldap.username"));
+        environment.put(Context.SECURITY_CREDENTIALS, EnvConfiguration.getProperty("ldap.password"));
         this.ldapContext =  new InitialDirContext(environment);
     }
 
@@ -46,7 +42,7 @@ public class PeopleService {
         String filter = "objectclass=person";
         SearchControls searchControls = new SearchControls();
         searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-        NamingEnumeration<SearchResult> answer = ldapContext.search("ldap://localhost:389/dc=imolinfo,dc=it", filter, searchControls);
+        NamingEnumeration<SearchResult> answer = ldapContext.search(Utility.BASE_URL, filter, searchControls);
         JSONArray jArray = new JSONArray();
         Utility.jsonUserBuilder(answer, jArray);
         answer.close();
@@ -124,7 +120,7 @@ public class PeopleService {
         String filter = "(&(objectclass=person)(cn="+ cn + "))";
         SearchControls ctrl = new SearchControls();
         ctrl.setSearchScope(SearchControls.SUBTREE_SCOPE);
-        NamingEnumeration<SearchResult> answer = ldapContext.search("ldap://localhost:389/dc=imolinfo,dc=it", filter, ctrl);
+        NamingEnumeration<SearchResult> answer = ldapContext.search(Utility.BASE_URL, filter, ctrl);
         Utility.jsonUserBuilder(answer, jArray);
         answer.close();
 
@@ -137,7 +133,7 @@ public class PeopleService {
         String filter = "uidNumber=*";
         SearchControls searchControls = new SearchControls();
         searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-        NamingEnumeration<SearchResult> answer = ldapContext.search("ldap://localhost:389/dc=imolinfo,dc=it",filter,searchControls);
+        NamingEnumeration<SearchResult> answer = ldapContext.search(Utility.BASE_URL,filter,searchControls);
         Utility.jsonUserBuilder(answer, jArray);
 
         for(int i =0; i<jArray.length();i++){

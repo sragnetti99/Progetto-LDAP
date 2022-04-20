@@ -1,12 +1,12 @@
 package it.eg.cookbook.service;
 
 import it.eg.cookbook.Utils.Utility;
+import it.eg.cookbook.config.EnvConfiguration;
 import it.eg.cookbook.model.UserStatus;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import javax.naming.Context;
@@ -23,18 +23,15 @@ public class GroupService {
     @Autowired
     private PeopleService peopleService;
 
-    @Autowired
-    private Environment env;
-
     private final DirContext ldapContext;
 
     public GroupService() throws NamingException {
         Hashtable<String, String> environment = new Hashtable<>();
-        environment.put(Context.INITIAL_CONTEXT_FACTORY, env.getProperty("ldap.context"));
+        environment.put(Context.INITIAL_CONTEXT_FACTORY, EnvConfiguration.getProperty("ldap.context"));
         environment.put(Context.PROVIDER_URL, Utility.URL);
         environment.put(Context.SECURITY_AUTHENTICATION, "simple");
-        environment.put(Context.SECURITY_PRINCIPAL, env.getProperty("ldap.username"));
-        environment.put(Context.SECURITY_CREDENTIALS, env.getProperty("ldap.password"));
+        environment.put(Context.SECURITY_PRINCIPAL, EnvConfiguration.getProperty("ldap.username"));
+        environment.put(Context.SECURITY_CREDENTIALS, EnvConfiguration.getProperty("ldap.password"));
         this.ldapContext =  new InitialDirContext(environment);
     }
 
@@ -44,7 +41,6 @@ public class GroupService {
 
     public String getUsersInGroup(String groupId) throws NamingException, JSONException {
         String groupDN = "cn=" + groupId + "," + "ou=groups," + Utility.BASE_DN;
-
         JSONArray jArray = new JSONArray();
         String filter = "uniqueMember=*";
         SearchControls ctrl = new SearchControls();
@@ -64,12 +60,12 @@ public class GroupService {
             jArray.put(cnJson);
         }
         answer.close();
+
         return jArray.toString();
     }
 
     public JSONArray getAllGroups() throws JSONException, NamingException {
         JSONArray jArray = new JSONArray();
-
         String filter = "objectclass=groupOfUniqueNames";
         SearchControls ctrl = new SearchControls();
         ctrl.setSearchScope(SearchControls.SUBTREE_SCOPE);
@@ -94,7 +90,6 @@ public class GroupService {
 
     public String findUserInGroup(String uniqueMember, String groupId) throws NamingException, JSONException {
         JSONArray jArray = new JSONArray();
-
         String filter = "uniquemember=" + uniqueMember;
         SearchControls searchControls = new SearchControls();
         searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
