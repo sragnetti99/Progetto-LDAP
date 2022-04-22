@@ -22,7 +22,7 @@ public class User {
     private String sn;
 
     @ApiModelProperty(notes = "e-mail", position = 4, example = "sragnetti@imolinfo.it")
-    private String email;
+    private String mail;
 
     @ApiModelProperty(notes = "user password", position = 5,example = "password")
     private String password;

@@ -63,7 +63,7 @@ public class PeopleService {
         container.put(new BasicAttribute("cn", user.getCn()));
         container.put( new BasicAttribute("givenName", user.getGivenName()));
         container.put(new BasicAttribute("sn", user.getSn()));
-        container.put(new BasicAttribute("mail", user.getEmail()));
+        container.put(new BasicAttribute("mail", user.getMail()));
         container.put(new BasicAttribute("uid", user.getCn()));
         String hashedPwd = PasswordUtil.generateSSHA(user.getPassword().getBytes(StandardCharsets.UTF_8));
         container.put(new BasicAttribute("userPassword", hashedPwd));
@@ -91,7 +91,7 @@ public class PeopleService {
 
         mods[0] = putNewModificationAttribute("sn",user.getSn());
         mods[1] = putNewModificationAttribute("givenName",user.getGivenName());
-        mods[2] = putNewModificationAttribute("mail",user.getEmail());
+        mods[2] = putNewModificationAttribute("mail",user.getMail());
         mods[3] = putNewModificationAttribute("Uid",user.getUid());
 
         if(user.getUidNumber() == null || user.getUidNumber().isEmpty() ){
