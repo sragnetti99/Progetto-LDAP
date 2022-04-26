@@ -10,6 +10,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.naming.NamingException;
+import java.util.List;
 
 @Api(value = "/api/v1/people", produces = MediaType.APPLICATION_JSON_VALUE, tags = "Rest API - People CRUD")
 public interface PeopleApi {
@@ -42,6 +43,6 @@ public interface PeopleApi {
             @ApiResponse(code = 404, message = "Utente non trovato", response = String.class),
             @ApiResponse(code = 400, message = "Formato del parametro errato", response = String.class)
     })
-    ResponseMessage putUser(@RequestBody User user) throws NamingException;
+    ResponseMessage putUser(@RequestBody List<User> user) throws NamingException;
 
 }

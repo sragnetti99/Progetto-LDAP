@@ -1,6 +1,5 @@
 package it.eg.cookbook;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import it.eg.cookbook.model.User;
 import it.eg.cookbook.service.PeopleService;
 import org.json.JSONArray;
@@ -33,7 +32,7 @@ class PeopleIntegrationTest {
     }
 
     @Test
-    void getUsers() throws JSONException, NamingException, JsonProcessingException {
+    void getUsers() throws JSONException, NamingException {
         JSONArray array = new JSONArray(peopleService.getAllUsers());
         Assertions.assertEquals(2, array.length());
     }
@@ -88,4 +87,3 @@ class PeopleIntegrationTest {
     }
 
 }
-
