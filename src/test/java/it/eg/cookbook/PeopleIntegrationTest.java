@@ -18,11 +18,13 @@ import java.util.Hashtable;
 class PeopleIntegrationTest {
 
     private static PeopleService peopleService;
+    private static Hashtable<String, String> environment;
+    private static DirContext context;
 
     @BeforeAll
     static void init() throws NamingException, JSONException, NoSuchAlgorithmException {
-        Hashtable<String, String> environment = TestUtils.getEnvironment();
-        DirContext context = new InitialDirContext(environment);
+        environment = TestUtils.getEnvironment();
+        context = new InitialDirContext(environment);
         TestUtils.createOuGroup("people", context);
         TestUtils.createOuGroup("groups", context);
         TestUtils.createCnGroup("cn=test,ou=groups,dc=imolinfo,dc=it", "test", context);
@@ -42,7 +44,6 @@ class PeopleIntegrationTest {
         peopleService.save(TestUtils.createUser("utente3"));
         String result = peopleService.getAllUsers();
         Assertions.assertTrue(result.contains("utente3"));
-        peopleService.deleteUser("utente3");
     }
 
     @Test
@@ -83,7 +84,13 @@ class PeopleIntegrationTest {
         String result2 = peopleService.getAllUsers();
         Assertions.assertTrue(result2.contains(modifiedUser.getMail()));
         Assertions.assertTrue(result2.contains(modifiedUser.getSn()));
+
         peopleService.deleteUser("daModificare");
+        peopleService.deleteUser("utente1");
+        peopleService.deleteUser("utente2");
+        peopleService.deleteUser("utente3");
+        TestUtils.deleteAll(context);
     }
+
 
 }

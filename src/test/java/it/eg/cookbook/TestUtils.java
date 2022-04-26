@@ -53,4 +53,10 @@ public class TestUtils {
             context.createSubcontext(groupDN, entry);
         }
     }
+
+    public static void deleteAll(DirContext context) throws NamingException {
+        context.destroySubcontext("cn=test,ou=groups,dc=imolinfo,dc=it");
+        context.destroySubcontext("ou=groups,dc=imolinfo,dc=it");
+        context.destroySubcontext("ou=people,dc=imolinfo,dc=it");
+    }
 }

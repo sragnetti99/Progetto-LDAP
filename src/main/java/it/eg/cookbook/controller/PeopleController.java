@@ -67,7 +67,7 @@ public class PeopleController implements PeopleApi {
     @PutMapping(path = "/",  consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseMessage putUser(@RequestBody List<User> users) {
         try {
-            if(users.size() > 0){
+            if(!users.isEmpty()){
                 for(User user : users){
                     log.info(user.toString());
                     this.peopleService.putUser(user);
