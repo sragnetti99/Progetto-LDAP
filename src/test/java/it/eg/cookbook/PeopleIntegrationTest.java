@@ -91,6 +91,4 @@ class PeopleIntegrationTest {
         peopleService.deleteUser("utente3");
         TestUtils.deleteAll(context);
     }
-
-
 }
