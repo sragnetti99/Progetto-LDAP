@@ -24,7 +24,6 @@ public interface GroupApi {
     @ApiOperation(value = "Ritorna la lista di tutti gli uniqueMember di un gruppo")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok", response = ResponseMessage.class),
-            //@ApiResponse(code = 400, message = "Errore nel reperimento degli uniqueMember", response = String.class),
             @ApiResponse(code = 404, message = "Gruppo non trovato", response = String.class),
             @ApiResponse(code = 400, message = "Formato del parametro errato", response = String.class)
     })

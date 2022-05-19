@@ -3,8 +3,6 @@ package it.eg.cookbook.model;
 public enum ResponseCode {
 
     OK("Ok"),
-    DOCUMENTO_NON_TROVATO("Documento non trovato"),
-    DOCUMENTO_GIA_PRESENTE("Id documento è già presente"),
     GROUP_NOT_FOUND("Gruppo non trovato"),
     USER_NOT_FOUND("Utente non trovato"),
     USER_EXISTS("Utente già presente"),

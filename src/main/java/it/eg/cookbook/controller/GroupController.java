@@ -51,10 +51,6 @@ public class GroupController implements GroupApi {
              }
             this.groupService.deleteUserFromGroup(uniqueMember, groupId);
             return new ResponseMessage(true, ResponseCode.OK, "Utente eliminato correttamente dal gruppo");
-
-            /* else if(this.groupService.findUserInGroup(member, groupId).length() <= 2){
-                throw new BusinessException(ResponseCode.USER_NOT_IN_GROUP);
-            } */
         } catch (JSONException | IndexOutOfBoundsException e) {
             throw new BusinessException(ResponseCode.BAD_FORMAT);
         } catch (NoSuchAttributeException e) {

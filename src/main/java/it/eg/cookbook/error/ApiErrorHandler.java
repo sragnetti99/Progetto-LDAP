@@ -14,14 +14,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 public class ApiErrorHandler extends ResponseEntityExceptionHandler {
 
     private static final String EXCEPTION_MESSAGE_TRAILER = "An exception occurred! {}";
-    
-    /**
-     * Business exception - BusinessException
-     *
-     * @param ex
-     * @param request
-     * @return
-     */
+
     @ExceptionHandler({BusinessException.class})
     public ResponseEntity<ResponseMessage> handleBusinessException(final BusinessException ex, final WebRequest request) {
         if (ex.getCause() != null) {
@@ -33,13 +26,6 @@ public class ApiErrorHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(new ResponseMessage(ex), HttpStatus.BAD_REQUEST);
     }
 
-    /**
-     * System exception - Exception
-     *
-     * @param ex
-     * @param request
-     * @return
-     */
     @ExceptionHandler({Exception.class})
     public ResponseEntity<ResponseMessage> handleGenericException(final Exception ex, final WebRequest request) {
         log.error(EXCEPTION_MESSAGE_TRAILER, ex.getMessage(), ex);
